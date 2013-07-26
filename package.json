@@ -1,0 +1,13 @@
+{
+  "name": "browserstack-run",
+  "description": "A command line interface to run browser tests over BrowserStack",
+  "version": "0.0.1",
+  "homepage": "https://github.com/browserstack/browserstack-run",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/browserstack/browserstack-run.git"
+  },
+  "dependencies": {
+    "browserstack-cli": "~0.2.10"
+  }
+}
