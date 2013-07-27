@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 var program = require('commander'),
+    exec = require('child_process').exec,
     BrowserStack = require('browserstack'),
     fs = require('fs'),
     server = require('../lib/server').server;
@@ -39,4 +40,32 @@ var cleanUp = function cleanUp () {
 process.on('exit', cleanUp);
 process.on('SIGTERM', cleanUp);
 
+console.log("Launching server..");
 server.listen(parseInt(serverPort, 10));
+console.log("Tunneling..");
+
+var tunnelCommand = 'java -jar ~/.browserstack/BrowserStackTunnel.jar ';
+tunnelCommand += config.key + ' ';
+tunnelCommand += 'localhost' + ',';
+tunnelCommand += serverPort.toString() + ',';
+tunnelCommand += '0';
+
+var workers = [];
+
+exec(tunnelCommand, function () {
+  console.log(arguments);
+});
+
+setTimeout(function () {
+  config.browsers.forEach(function(browser) {
+    console.log("Launching:", browser);
+
+    var url = 'http://localhost:' + serverPort.toString() + '/';
+    url += config.test_path;
+
+    browser['url'] = url;
+
+    client.createWorker(browser, function () {
+    });
+  });
+}, 5000);
