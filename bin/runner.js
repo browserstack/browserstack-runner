@@ -1,13 +1,14 @@
 #! /usr/bin/env node
 
 var program = require('commander'),
-    exec = require('child_process').exec,
     BrowserStack = require('browserstack'),
     fs = require('fs'),
-    server = require('../lib/server').server;
+    utils = require('../lib/utils');
+    Server = require('../lib/server').Server;
+    Tunnel = require('../lib/tunnel').Tunnel;
 
 var serverPort = 8888;
-
+var tunnel;
 
 try {
   var config = require(process.cwd() + '/browserstack');
@@ -31,41 +32,63 @@ var client = BrowserStack.createClient({
 var pid_file = process.cwd() + '/browserstack-run.pid';
 fs.writeFileSync(pid_file, process.pid, 'utf-8')
 
+var workers = {};
+
 var cleanUp = function cleanUp () {
+  try {
+    server.close();
+  } catch (e) {
+    console.log("Server already closed");
+  }
+
   console.log("Exiting");
-  fs.unlink(pid_file);
-  server.close();
+
+  for (var key in workers) {
+    if (workers.hasOwnProperty(key)) {
+      client.terminateWorker(workers[key].id, function () {
+        console.log('[%s] Terminated', workers[key].string);
+      });
+    }
+  }
+
+  process.kill(tunnel.process.pid, 'SIGKILL', function () {
+    fs.unlink(pid_file);
+  });
 };
 
-process.on('exit', cleanUp);
+process.on('SIGINT', cleanUp);
 process.on('SIGTERM', cleanUp);
 
 console.log("Launching server..");
+
+var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
-console.log("Tunneling..");
 
-var tunnelCommand = 'java -jar ~/.browserstack/BrowserStackTunnel.jar ';
-tunnelCommand += config.key + ' ';
-tunnelCommand += 'localhost' + ',';
-tunnelCommand += serverPort.toString() + ',';
-tunnelCommand += '0';
+if (config.browsers) {
+  tunnel = new Tunnel(config.key, serverPort, function () {
+    config.browsers.forEach(function(browser) {
+      var browserString = utils.browserString(browser);
+      console.log("[%s] Launching", browserString);
 
-var workers = [];
+      var url = 'http://localhost:' + serverPort.toString() + '/';
+      url += config.test_path;
 
-exec(tunnelCommand, function () {
-  console.log(arguments);
-});
+      var key = utils.uuid();
 
-setTimeout(function () {
-  config.browsers.forEach(function(browser) {
-    console.log("Launching:", browser);
+      if (url.indexOf('?') > 0) {
+        url += '&';
+      } else {
+        url += '?';
+      }
 
-    var url = 'http://localhost:' + serverPort.toString() + '/';
-    url += config.test_path;
+      url += '_worker_key=' + key + '&_browser_string=' + browserString;
+      browser['url'] = url;
 
-    browser['url'] = url;
-
-    client.createWorker(browser, function () {
+      client.createWorker(browser, function (err, worker) {
+        worker.config = browser;
+        worker.string = browserString;
+        workers[key] = worker;
+      });
     });
   });
-}, 5000);
+}
