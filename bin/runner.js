@@ -88,6 +88,15 @@ if (config.browsers) {
         worker.config = browser;
         worker.string = browserString;
         workers[key] = worker;
+
+        var statusPoller = setInterval(function () {
+          client.getWorker(worker.id, function (err, _worker) {
+            if (_worker.status === 'running') {
+              clearInterval(statusPoller);
+              console.log('[%s] Launched', worker.string);
+            }
+          });
+        }, 2000);
       });
     });
   });
