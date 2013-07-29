@@ -33,7 +33,6 @@ var pid_file = process.cwd() + '/browserstack-run.pid';
 fs.writeFileSync(pid_file, process.pid, 'utf-8')
 
 var workers = {};
-var tracebacks = [];
 
 var cleanUp = function cleanUp () {
   try {
@@ -52,12 +51,6 @@ var cleanUp = function cleanUp () {
     }
   }
 
-  var status = 0;
-
-  tracebacks.forEach(function (worker) {
-    status += worker.tracebacks.length;
-  });
-
   process.kill(tunnel.process.pid, 'SIGKILL');
   fs.unlink(pid_file);
 };
@@ -67,7 +60,7 @@ process.on('SIGINT', cleanUp);
 
 console.log("Launching server..");
 
-var server = new Server(client, workers, tracebacks);
+var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
 
 if (config.browsers) {
