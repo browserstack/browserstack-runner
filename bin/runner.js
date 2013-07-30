@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 
-var program = require('commander'),
-    BrowserStack = require('browserstack'),
+var BrowserStack = require('browserstack'),
     fs = require('fs'),
     utils = require('../lib/utils');
     Server = require('../lib/server').Server;
