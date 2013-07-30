@@ -4,17 +4,14 @@ A command line interface to run browser tests over BrowserStack.
 Go to the `browserstack-runner` directory.  
 Install browserstack-runner
 
-```
-npm -g install
-``
+    npm -g install
+
 or
 
 
 For development,
-```
-npm link
-```
 
+    npm link
 
 ## Configuration
 To run browser tests on BrowserStack infrastructure, copy
