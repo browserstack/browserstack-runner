@@ -83,13 +83,20 @@ if (config.browsers) {
       browser['url'] = url;
 
       client.createWorker(browser, function (err, worker) {
+        var runningChecked = false;
+
         worker.config = browser;
         worker.string = browserString;
         workers[key] = worker;
 
         var statusPoller = setInterval(function () {
           client.getWorker(worker.id, function (err, _worker) {
+            if (runningChecked) {
+              return;
+            }
+
             if (_worker.status === 'running') {
+              runningChecked = true;
               clearInterval(statusPoller);
               console.log('[%s] Launched', worker.string);
             }
