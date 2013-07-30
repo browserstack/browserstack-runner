@@ -1,6 +1,7 @@
 {
   "username": "<username>",
   "key": "<key>",
+  "test_path": "path/to/test/page",
   "browsers":   [{
     "browser": "firefox",
     "browser_version": "15.0",
