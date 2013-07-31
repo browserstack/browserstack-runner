@@ -8,7 +8,7 @@
     "url": "git://github.com/browserstack/browserstack-runner.git"
   },
   "dependencies": {
-    "browserstack": "git://github.com/airportyh/node-browserstack.git#v3"
+    "browserstack": "git://github.com/browserstack/node-browserstack.git"
   },
   "bin": {
     "browserstack-runner": "bin/runner.js"
