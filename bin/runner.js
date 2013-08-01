@@ -4,32 +4,11 @@ var BrowserStack = require('browserstack'),
     fs = require('fs'),
     utils = require('../lib/utils');
     Server = require('../lib/server').Server;
+    config = require('../lib/config');
     Tunnel = require('../lib/tunnel').Tunnel;
 
 var serverPort = 8888;
 var tunnel;
-
-try {
-  var config = require(process.cwd() + '/browserstack');
-}
-
-catch (e) {
-  if (e.code == 'MODULE_NOT_FOUND') {
-    console.log('Configuration file `browserstack.json` is missing.');
-  } else {
-    throw(e);
-  }
-
-  process.exit();
-}
-
-if (process.env.BROWSERSTACK_KEY) {
-  config.key = process.env.BROWSERSTACK_KEY;
-}
-
-if (process.env.BROWSERSTACK_USERNAME) {
-  config.username = process.env.BROWSERSTACK_USERNAME;
-}
 
 var client = BrowserStack.createClient({
   username: config.username,
@@ -40,7 +19,6 @@ var pid_file = process.cwd() + '/browserstack-run.pid';
 fs.writeFileSync(pid_file, process.pid, 'utf-8')
 
 var workers = {};
-
 var cleanUp = function cleanUp () {
   try {
     server.close();
