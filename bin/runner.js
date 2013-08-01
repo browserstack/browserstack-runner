@@ -70,47 +70,66 @@ console.log("Launching server..");
 var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
 
+function launchBrowser(browser) {
+  var browserString = utils.browserString(browser);
+  console.log("[%s] Launching", browserString);
+
+  var url = 'http://localhost:' + serverPort.toString() + '/';
+  url += config.test_path;
+
+  var key = utils.uuid();
+
+  if (url.indexOf('?') > 0) {
+    url += '&';
+  } else {
+    url += '?';
+  }
+
+  url += '_worker_key=' + key + '&_browser_string=' + browserString;
+  browser['url'] = url;
+
+  client.createWorker(browser, function (err, worker) {
+    var runningChecked = false;
+
+    worker.config = browser;
+    worker.string = browserString;
+    workers[key] = worker;
+
+    var statusPoller = setInterval(function () {
+      client.getWorker(worker.id, function (err, _worker) {
+        if (runningChecked) {
+          return;
+        }
+
+        if (_worker.status === 'running') {
+          runningChecked = true;
+          clearInterval(statusPoller);
+          console.log('[%s] Launched', worker.string);
+        }
+      });
+    }, 2000);
+  });
+}
+
 if (config.browsers) {
   tunnel = new Tunnel(config.key, serverPort, function () {
     config.browsers.forEach(function(browser) {
-      var browserString = utils.browserString(browser);
-      console.log("[%s] Launching", browserString);
+      if (browser.browser_version === "latest") {
+        console.log("[%s] Finding version.", utils.browserString(browser));
 
-      var url = 'http://localhost:' + serverPort.toString() + '/';
-      url += config.test_path;
+        client.getLatest(browser, function(err, version) {
+          console.log("[%s] Version is %s.",
+                      utils.browserString(browser), version);
+          browser.browser_version = version;
 
-      var key = utils.uuid();
-
-      if (url.indexOf('?') > 0) {
-        url += '&';
+          // So that all latest logs come in together
+          setTimeout(function () {
+            launchBrowser(browser);
+          }, 100);
+        });
       } else {
-        url += '?';
+        launchBrowser(browser);
       }
-
-      url += '_worker_key=' + key + '&_browser_string=' + browserString;
-      browser['url'] = url;
-
-      client.createWorker(browser, function (err, worker) {
-        var runningChecked = false;
-
-        worker.config = browser;
-        worker.string = browserString;
-        workers[key] = worker;
-
-        var statusPoller = setInterval(function () {
-          client.getWorker(worker.id, function (err, _worker) {
-            if (runningChecked) {
-              return;
-            }
-
-            if (_worker.status === 'running') {
-              runningChecked = true;
-              clearInterval(statusPoller);
-              console.log('[%s] Launched', worker.string);
-            }
-          });
-        }, 2000);
-      });
     });
   });
 }
