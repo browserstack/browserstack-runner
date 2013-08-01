@@ -23,6 +23,14 @@ catch (e) {
   process.exit();
 }
 
+if (process.env.BROWSERSTACK_KEY) {
+  config.key = process.env.BROWSERSTACK_KEY;
+}
+
+if (process.env.BROWSERSTACK_USERNAME) {
+  config.username = process.env.BROWSERSTACK_USERNAME;
+}
+
 var client = BrowserStack.createClient({
   username: config.username,
   password: config.key
