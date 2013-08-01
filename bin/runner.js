@@ -83,13 +83,22 @@ function launchBrowser(browser) {
           runningChecked = true;
           clearInterval(statusPoller);
           console.log('[%s] Launched', worker.string);
+
+          setTimeout(function () {
+            if (!worker.acknowledged) {
+              utils.alertBrowserStack('Worker inactive for too long',
+                                      JSON.stringify(worker), function () {
+                                        process.exit(-2);
+                                      })
+            }
+          }, 120 * 1000);
         }
       });
     }, 2000);
   });
 }
 
-if (config.browsers) {
+if (config.browsers && config.browsers.length > 0) {
   tunnel = new Tunnel(config.key, serverPort, function () {
     config.browsers.forEach(function(browser) {
       if (browser.browser_version === "latest") {
