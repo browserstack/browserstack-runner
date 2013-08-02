@@ -36,8 +36,16 @@ var cleanUp = function cleanUp () {
     }
   }
 
-  process.kill(tunnel.process.pid, 'SIGKILL');
-  fs.unlink(pid_file);
+  try {
+    process.kill(tunnel.process.pid, 'SIGKILL');
+  } catch (e) {
+    console.log("Non existant tunnel");
+  }
+  try {
+    fs.unlink(pid_file);
+  } catch (e) {
+    console.log("Non existant pid file.");
+  }
 };
 
 process.on('exit', cleanUp);
