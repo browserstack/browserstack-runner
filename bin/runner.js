@@ -66,6 +66,13 @@ function launchBrowser(browser) {
   url += '_worker_key=' + key + '&_browser_string=' + browserString;
   browser['url'] = url;
 
+  if (config.project) {
+    browser.project = config.project;
+  }
+  if (config.build) {
+    browser.build = config.build;
+  }
+
   client.createWorker(browser, function (err, worker) {
     var runningChecked = false;
 
