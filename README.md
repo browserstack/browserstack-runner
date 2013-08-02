@@ -16,7 +16,13 @@ For development,
 ## Configuration
 To run browser tests on BrowserStack infrastructure, you need to
 create a `browserstack.json` file in project's root directory (the
-directory from which tests are run).
+directory from which tests are run), by running this command:
+
+    browserstack-runner init [preset]
+
+If nothing is provided as `preset` **default** is used.
+
+> Currently only one preset is present: **default**
 
 ### Parameters
 

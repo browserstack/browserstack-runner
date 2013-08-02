@@ -1,0 +1,37 @@
+[{
+  "browser": "firefox",
+  "browser_version": "latest",
+  "os": "OS X",
+  "os_version": "Snow Leopard",
+  "device": null
+},{
+  "browser": "chrome",
+  "browser_version": "latest",
+  "os": "OS X",
+  "os_version": "Snow Leopard",
+  "device": null
+}, {
+  "browser": "firefox",
+  "browser_version": "latest",
+  "os": "Windows",
+  "os_version": "7",
+  "device": null
+}, {
+  "browser": "chrome",
+  "browser_version": "latest",
+  "os": "Windows",
+  "os_version": "7",
+  "device": null
+}, {
+  "browser": "ie",
+  "browser_version": "latest",
+  "os": "Windows",
+  "os_version": "7",
+  "device": null
+}, {
+  "browser": "ie",
+  "browser_version": "latest",
+  "os": "Windows",
+  "os_version": "8",
+  "device": null
+}]
