@@ -86,12 +86,12 @@ function launchBrowser(browser) {
 
           setTimeout(function () {
             if (!worker.acknowledged) {
-              utils.alertBrowserStack('Worker inactive for too long',
-                                      JSON.stringify(worker), function () {
-                                        process.exit(-2);
-                                      })
+              var subject = "Worker inactive for too long: " + worker.string;
+              var content = "Worker details:\n" + JSON.stringify(worker);
+
+              utils.alertBrowserStack(subject, content);
             }
-          }, 120 * 1000);
+          }, 60 * 1000);
         }
       });
     }, 2000);
