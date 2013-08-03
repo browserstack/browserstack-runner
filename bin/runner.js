@@ -31,7 +31,13 @@ var cleanUp = function cleanUp () {
   for (var key in workers) {
     if (workers.hasOwnProperty(key)) {
       client.terminateWorker(workers[key].id, function () {
+        if (!workers[key]) {
+          return;
+        }
+
         console.log('[%s] Terminated', workers[key].string);
+        clearTimeout(workers[key].activityTimeout);
+        delete workers[key]
       });
     }
   }
@@ -82,7 +88,14 @@ function launchBrowser(browser) {
   }
 
   client.createWorker(browser, function (err, worker) {
-    var runningChecked = false;
+    if (err || typeof worker !== 'object') {
+      utils.alertBrowserStack("Failed to launch worker",
+                              "Arguments: " + JSON.stringify({
+                                err: err,
+                                worker: worker
+                              }, null, 4));
+      return;
+    }
 
     worker.config = browser;
     worker.string = browserString;
@@ -90,19 +103,19 @@ function launchBrowser(browser) {
 
     var statusPoller = setInterval(function () {
       client.getWorker(worker.id, function (err, _worker) {
-        if (runningChecked) {
+        if (worker.launched) {
           return;
         }
 
         if (_worker.status === 'running') {
-          runningChecked = true;
           clearInterval(statusPoller);
           console.log('[%s] Launched', worker.string);
+          worker.launched = true;
 
-          setTimeout(function () {
+          worker.activityTimeout = setTimeout(function () {
             if (!worker.acknowledged) {
               var subject = "Worker inactive for too long: " + worker.string;
-              var content = "Worker details:\n" + JSON.stringify(worker);
+              var content = "Worker details:\n" + JSON.stringify(worker, null, 4);
 
               utils.alertBrowserStack(subject, content);
             }
