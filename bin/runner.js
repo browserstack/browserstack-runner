@@ -120,6 +120,14 @@ function launchBrowser(browser) {
               utils.alertBrowserStack(subject, content);
             }
           }, 60 * 1000);
+
+          setTimeout(function () {
+            if (workers[key]) {
+              var subject = "Tests timeed out on: " + worker.string;
+              var content = "Worker details:\n" + JSON.stringify(worker, null, 4);
+              utils.alertBrowserStack(subject, content);
+            }
+          }, (config.timeout || 300) * 1000);
         }
       });
     }, 2000);
