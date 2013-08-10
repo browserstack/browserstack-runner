@@ -45,12 +45,12 @@ var cleanUp = function cleanUp () {
   try {
     process.kill(tunnel.process.pid, 'SIGKILL');
   } catch (e) {
-    console.log("Non existant tunnel");
+    console.log("Non existent tunnel");
   }
   try {
     fs.unlink(pid_file);
   } catch (e) {
-    console.log("Non existant pid file.");
+    console.log("Non existent pid file.");
   }
 };
 
