@@ -123,7 +123,7 @@ function launchBrowser(browser) {
 
           setTimeout(function () {
             if (workers[key]) {
-              var subject = "Tests timeed out on: " + worker.string;
+              var subject = "Tests timed out on: " + worker.string;
               var content = "Worker details:\n" + JSON.stringify(worker, null, 4);
               utils.alertBrowserStack(subject, content);
             }
