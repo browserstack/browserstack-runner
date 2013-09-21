@@ -62,6 +62,19 @@ console.log("Launching server..");
 var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
 
+server.on('error', function(e){
+  var message;
+  if (e.code === 'EADDRINUSE') {
+      message = "Unable to start server on port " + serverPort + ", exiting";
+      console.error(message);
+      process.kill();
+  }
+  // Not sure if all errors should report the error and stop the server
+  // If so, uncomment
+  // // console.error(message || e);
+  // // process.kill();
+});
+
 function launchBrowser(browser) {
   var browserString = utils.browserString(browser);
   console.log("[%s] Launching", browserString);
