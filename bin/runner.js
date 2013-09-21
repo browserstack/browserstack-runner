@@ -2,9 +2,9 @@
 
 var BrowserStack = require('browserstack'),
     fs = require('fs'),
-    utils = require('../lib/utils');
-    Server = require('../lib/server').Server;
-    config = require('../lib/config');
+    utils = require('../lib/utils'),
+    Server = require('../lib/server').Server,
+    config = require('../lib/config'),
     Tunnel = require('../lib/tunnel').Tunnel;
 
 var serverPort = 8888;
@@ -16,7 +16,7 @@ var client = BrowserStack.createClient({
 });
 
 var pid_file = process.cwd() + '/browserstack-run.pid';
-fs.writeFileSync(pid_file, process.pid, 'utf-8')
+fs.writeFileSync(pid_file, process.pid, 'utf-8');
 
 var workers = {};
 var cleanUp = function cleanUp () {
@@ -37,7 +37,7 @@ var cleanUp = function cleanUp () {
 
         console.log('[%s] Terminated', workers[key].string);
         clearTimeout(workers[key].activityTimeout);
-        delete workers[key]
+        delete workers[key];
       });
     }
   }
