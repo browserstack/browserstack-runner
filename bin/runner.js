@@ -87,6 +87,10 @@ function launchBrowser(browser) {
     browser.build = config.build;
   }
 
+  if(config.tunnelIdentifier) {
+    browser["tunnel_identifier"] = config.tunnelIdentifier;
+  }
+
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
       utils.alertBrowserStack("Failed to launch worker",
@@ -135,7 +139,7 @@ function launchBrowser(browser) {
 }
 
 if (config.browsers && config.browsers.length > 0) {
-  tunnel = new Tunnel(config.key, serverPort, function () {
+  tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
     config.browsers.forEach(function(browser) {
       if (browser.browser_version === "latest") {
         console.log("[%s] Finding version.", utils.browserString(browser));
