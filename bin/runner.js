@@ -88,7 +88,7 @@ function launchBrowser(browser) {
   }
 
   if(config.tunnelIdentifier) {
-    browser["tunnelIdentifier"] = config.tunnelIdentifier;
+    browser["tunnel_identifier"] = config.tunnelIdentifier;
   }
 
   client.createWorker(browser, function (err, worker) {
