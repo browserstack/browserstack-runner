@@ -27,7 +27,7 @@ If nothing is provided as `preset` **default** is used.
 ### Parameters
 
  - *username*: BrowserStack username
-   (Alternatively: use `BROWSERSTACK_UESRNAME` environment variable)
+   (Alternatively: use `BROWSERSTACK_USERNAME` environment variable)
 
  - *key*: BrowserStack key
    (Alternatively: use `BROWSERSTACK_KEY` environment variable)
