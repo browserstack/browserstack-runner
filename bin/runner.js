@@ -2,9 +2,9 @@
 
 var BrowserStack = require('browserstack'),
     fs = require('fs'),
-    utils = require('../lib/utils');
-    Server = require('../lib/server').Server;
-    config = require('../lib/config');
+    utils = require('../lib/utils'),
+    Server = require('../lib/server').Server,
+    config = require('../lib/config'),
     Tunnel = require('../lib/tunnel').Tunnel;
 
 var serverPort = 8888;
@@ -16,7 +16,7 @@ var client = BrowserStack.createClient({
 });
 
 var pid_file = process.cwd() + '/browserstack-run.pid';
-fs.writeFileSync(pid_file, process.pid, 'utf-8')
+fs.writeFileSync(pid_file, process.pid, 'utf-8');
 
 var workers = {};
 var cleanUp = function cleanUp () {
@@ -37,7 +37,7 @@ var cleanUp = function cleanUp () {
 
         console.log('[%s] Terminated', workers[key].string);
         clearTimeout(workers[key].activityTimeout);
-        delete workers[key]
+        delete workers[key];
       });
     }
   }
@@ -61,6 +61,19 @@ console.log("Launching server..");
 
 var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
+
+server.on('error', function(e){
+  var message;
+  if (e.code === 'EADDRINUSE') {
+      message = "Unable to start server on port " + serverPort + ", exiting";
+      console.error(message);
+      process.kill();
+  }
+  // Not sure if all errors should report the error and stop the server
+  // If so, uncomment
+  // // console.error(message || e);
+  // // process.kill();
+});
 
 function launchBrowser(browser) {
   var browserString = utils.browserString(browser);
@@ -92,6 +105,12 @@ function launchBrowser(browser) {
   }
 
   client.createWorker(browser, function (err, worker) {
+
+    if (err && err.message === 'HTTP Basic: Access denied.\n') {
+      console.error("Unable to authenticate on BrowserStack, exiting");
+      process.kill();
+    }
+
     if (err || typeof worker !== 'object') {
       utils.alertBrowserStack("Failed to launch worker",
                               "Arguments: " + JSON.stringify({
