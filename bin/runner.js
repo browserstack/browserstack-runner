@@ -57,7 +57,7 @@ var cleanUp = function cleanUp () {
 process.on('exit', cleanUp);
 process.on('SIGINT', cleanUp);
 
-console.log("Launching server..");
+console.log("Launching server on port:", serverPort);
 
 var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
@@ -140,6 +140,7 @@ function launchBrowser(browser) {
 
 if (config.browsers && config.browsers.length > 0) {
   tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
+    console.log("Launching BrowserStack workers");
     config.browsers.forEach(function(browser) {
       if (browser.browser_version === "latest") {
         console.log("[%s] Finding version.", utils.browserString(browser));
