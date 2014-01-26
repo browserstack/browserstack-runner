@@ -92,6 +92,12 @@ function launchBrowser(browser) {
   }
 
   client.createWorker(browser, function (err, worker) {
+
+    if (err.message === 'HTTP Basic: Access denied.\n') {
+      console.error("Unable to authenticate on BrowserStack, exiting");
+      process.kill();
+    }
+
     if (err || typeof worker !== 'object') {
       utils.alertBrowserStack("Failed to launch worker",
                               "Arguments: " + JSON.stringify({
