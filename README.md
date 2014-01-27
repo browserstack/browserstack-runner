@@ -27,7 +27,7 @@ If nothing is provided as `preset` **default** is used.
 ### Parameters
 
  - *username*: BrowserStack username
-   (Alternatively: use `BROWSERSTACK_UESRNAME` environment variable)
+   (Alternatively: use `BROWSERSTACK_USERNAME` environment variable)
 
  - *key*: BrowserStack key
    (Alternatively: use `BROWSERSTACK_KEY` environment variable)
@@ -90,6 +90,21 @@ A sample configuration file:
         "os_version": "8"
       }]
     }
+
+
+### Enviroment variables
+
+* `BROWSERSTACK_USER`:
+BrowserStack user name.
+
+* `BROWSERSTACK_KEY`:
+BrowserStack key.
+
+* `TUNNEL_ID`:
+Identifier for the current instance of the tunnel process. In `TRAVIS` setup `TRAVIS_JOB_ID` will be the default identifier.
+
+* `BROWSERSTACK_JSON`:
+Path to the browserstack.json file. If null, `browserstack.json` in the root directory will be used.
 
 
 ### Secure Information
