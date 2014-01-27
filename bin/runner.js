@@ -89,6 +89,7 @@ function launchBrowser(browser, url) {
   }
 
   client.createWorker(browser, function (err, worker) {
+    console.log("Error from BrowserStack: ", err);
     if (err || typeof worker !== 'object') {
       utils.alertBrowserStack("Failed to launch worker",
                               "Arguments: " + JSON.stringify({
@@ -135,6 +136,20 @@ function launchBrowser(browser, url) {
   });
 }
 
+function launchBrowsers(config, browser) {
+  setTimeout(function () {
+    if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+      config.test_path.forEach(function(path){
+        var url = 'http://localhost:' + serverPort.toString() + '/' + path;
+        launchBrowser(browser,url);
+      });
+    } else {
+      var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
+      launchBrowser(browser,url);              
+    }
+  }, 100);
+}
+
 if (config.browsers && config.browsers.length > 0) {
   tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
     console.log("Launching BrowserStack workers");
@@ -146,22 +161,11 @@ if (config.browsers && config.browsers.length > 0) {
           console.log("[%s] Version is %s.",
                       utils.browserString(browser), version);
           browser.browser_version = version;
-
           // So that all latest logs come in together
-          setTimeout(function () {
-            if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
-              config.test_path.forEach(function(path){
-                var url = 'http://localhost:' + serverPort.toString() + '/' + path;
-                launchBrowser(browser,url);
-              });
-            } else {
-              var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
-              launchBrowser(browser,url);              
-            }
-          }, 100);
+          launchBrowsers(config, browser);
         });
       } else {
-        launchBrowser(browser);
+        launchBrowsers(config, browser);
       }
     });
   });
