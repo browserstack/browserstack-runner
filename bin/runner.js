@@ -89,8 +89,8 @@ function launchBrowser(browser, url) {
   }
 
   client.createWorker(browser, function (err, worker) {
-    console.log("Error from BrowserStack: ", err);
     if (err || typeof worker !== 'object') {
+      console.log("Error from BrowserStack: ", err);
       utils.alertBrowserStack("Failed to launch worker",
                               "Arguments: " + JSON.stringify({
                                 err: err,
