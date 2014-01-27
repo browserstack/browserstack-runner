@@ -62,12 +62,9 @@ console.log("Launching server on port:", serverPort);
 var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
 
-function launchBrowser(browser) {
+function launchBrowser(browser, url) {
   var browserString = utils.browserString(browser);
   console.log("[%s] Launching", browserString);
-
-  var url = 'http://localhost:' + serverPort.toString() + '/';
-  url += config.test_path;
 
   var key = utils.uuid();
 
@@ -93,6 +90,7 @@ function launchBrowser(browser) {
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
+      console.log("Error from BrowserStack: ", err);
       utils.alertBrowserStack("Failed to launch worker",
                               "Arguments: " + JSON.stringify({
                                 err: err,
@@ -138,6 +136,20 @@ function launchBrowser(browser) {
   });
 }
 
+var launchBrowsers = function(config, browser) {
+  setTimeout(function () {
+    if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+      config.test_path.forEach(function(path){
+        var url = 'http://localhost:' + serverPort.toString() + '/' + path;
+        launchBrowser(browser,url);
+      });
+    } else {
+      var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
+      launchBrowser(browser,url);              
+    }
+  }, 100);
+}
+
 if (config.browsers && config.browsers.length > 0) {
   tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
     console.log("Launching BrowserStack workers");
@@ -149,14 +161,11 @@ if (config.browsers && config.browsers.length > 0) {
           console.log("[%s] Version is %s.",
                       utils.browserString(browser), version);
           browser.browser_version = version;
-
           // So that all latest logs come in together
-          setTimeout(function () {
-            launchBrowser(browser);
-          }, 100);
+          launchBrowsers(config, browser);
         });
       } else {
-        launchBrowser(browser);
+        launchBrowsers(config, browser);
       }
     });
   });
