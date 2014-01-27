@@ -42,7 +42,7 @@ A sample configuration file:
     {
       "username": "<username>",
       "key": "<key>",
-      "test_path": "relative/path/to/test/page",
+      "test_path": ["relative/path/to/test/page1", "relative/path/to/test/page2"],
       "browsers":   [{
         "browser": "firefox",
         "browser_version": "15.0",
