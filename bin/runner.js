@@ -62,12 +62,9 @@ console.log("Launching server on port:", serverPort);
 var server = new Server(client, workers);
 server.listen(parseInt(serverPort, 10));
 
-function launchBrowser(browser) {
+function launchBrowser(browser, url) {
   var browserString = utils.browserString(browser);
   console.log("[%s] Launching", browserString);
-
-  var url = 'http://localhost:' + serverPort.toString() + '/';
-  url += config.test_path;
 
   var key = utils.uuid();
 
@@ -152,7 +149,15 @@ if (config.browsers && config.browsers.length > 0) {
 
           // So that all latest logs come in together
           setTimeout(function () {
-            launchBrowser(browser);
+            if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+              config.test_path.forEach(function(path){
+                var url = 'http://localhost:' + serverPort.toString() + '/' + path;
+                launchBrowser(browser,url);
+              });
+            } else {
+              var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
+              launchBrowser(browser,url);              
+            }
           }, 100);
         });
       } else {
