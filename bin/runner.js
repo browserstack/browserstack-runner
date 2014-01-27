@@ -136,7 +136,7 @@ function launchBrowser(browser, url) {
   });
 }
 
-function launchBrowsers(config, browser) {
+var launchBrowsers = function(config, browser) {
   setTimeout(function () {
     if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
       config.test_path.forEach(function(path){
