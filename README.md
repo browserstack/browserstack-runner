@@ -35,6 +35,9 @@ If nothing is provided as `preset` **default** is used.
  - *test_path*: Path to the which will execute the tests when opened
    in a browser.
 
+ - *test_framework*: Specify test framework which will execute the tests.
+    We support qunit, jasmine and mocha.
+
  - *browsers*: A list of browsers on which tests are to be run.
 
 A sample configuration file:
@@ -42,6 +45,7 @@ A sample configuration file:
     {
       "username": "<username>",
       "key": "<key>",
+      "test_framework": "qunit/jasmine/mocha",
       "test_path": ["relative/path/to/test/page1", "relative/path/to/test/page2"],
       "browsers":   [{
         "browser": "firefox",
