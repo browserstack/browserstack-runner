@@ -38,6 +38,8 @@ If nothing is provided as `preset` **default** is used.
  - *test_framework*: Specify test framework which will execute the tests.
     We support qunit, jasmine and mocha.
 
+ - *timeout*: Specify worker timeout with BrowserStack.
+
  - *browsers*: A list of browsers on which tests are to be run.
 
 A sample configuration file:
