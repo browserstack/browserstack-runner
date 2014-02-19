@@ -8,7 +8,7 @@
     "url": "git://github.com/browserstack/browserstack-runner.git"
   },
   "dependencies": {
-    "browserstack": "1.0.1"
+    "browserstack": "1.0.2"
   },
   "bin": {
     "browserstack-runner": "bin/cli.js"
