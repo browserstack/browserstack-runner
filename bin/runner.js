@@ -5,7 +5,7 @@ var BrowserStack = require('browserstack'),
     utils = require('../lib/utils');
     Server = require('../lib/server').Server;
     config = require('../lib/config');
-    Tunnel = require('../lib/tunnel').Tunnel;
+    Tunnel = require('../lib/local').Tunnel;
 
 var serverPort = 8888;
 var tunnel;
