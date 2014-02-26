@@ -129,8 +129,8 @@ function launchBrowser(browser, url) {
                 if (!error && screenshot.url) {
                   console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
                 }
+                utils.alertBrowserStack(subject, content);
               });
-              utils.alertBrowserStack(subject, content);
             }
           }, timeout * 1000);
 
@@ -138,7 +138,12 @@ function launchBrowser(browser, url) {
             if (workers[key]) {
               var subject = "Tests timed out on: " + worker.string;
               var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
-              utils.alertBrowserStack(subject, content);
+              client.takeScreenshot(worker.id, function(error, screenshot) {
+                if (!error && screenshot.url) {
+                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
+                }
+                utils.alertBrowserStack(subject, content);
+              });
             }
           }, (timeout * 1000));
         }
