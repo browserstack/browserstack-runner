@@ -94,6 +94,7 @@ function launchBrowser(browser, url) {
   } else {
     timeout = 300;
   }
+  var activityTimeout = timeout - 10;
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
@@ -132,7 +133,7 @@ function launchBrowser(browser, url) {
                 utils.alertBrowserStack(subject, content);
               });
             }
-          }, timeout * 1000);
+          }, activityTimeout * 1000);
 
           setTimeout(function () {
             if (workers[key]) {
@@ -145,7 +146,7 @@ function launchBrowser(browser, url) {
                 utils.alertBrowserStack(subject, content);
               });
             }
-          }, (timeout * 1000));
+          }, (activityTimeout * 1000));
         }
       });
     }, 2000);
