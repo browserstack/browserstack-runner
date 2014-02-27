@@ -94,6 +94,7 @@ function launchBrowser(browser, url) {
   } else {
     timeout = 300;
   }
+  var activityTimeout = timeout - 10;
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
@@ -125,18 +126,27 @@ function launchBrowser(browser, url) {
             if (!worker.acknowledged) {
               var subject = "Worker inactive for too long: " + worker.string;
               var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
-
-              utils.alertBrowserStack(subject, content);
+              client.takeScreenshot(worker.id, function(error, screenshot) {
+                if (!error && screenshot.url) {
+                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
+                }
+                utils.alertBrowserStack(subject, content);
+              });
             }
-          }, timeout * 1000);
+          }, activityTimeout * 1000);
 
           setTimeout(function () {
             if (workers[key]) {
               var subject = "Tests timed out on: " + worker.string;
               var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
-              utils.alertBrowserStack(subject, content);
+              client.takeScreenshot(worker.id, function(error, screenshot) {
+                if (!error && screenshot.url) {
+                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
+                }
+                utils.alertBrowserStack(subject, content);
+              });
             }
-          }, (timeout * 1000));
+          }, (activityTimeout * 1000));
         }
       });
     }, 2000);
