@@ -5,7 +5,7 @@ var BrowserStack = require('browserstack'),
     utils = require('../lib/utils');
     Server = require('../lib/server').Server;
     config = require('../lib/config');
-    Tunnel = require('../lib/tunnel').Tunnel;
+    Tunnel = require('../lib/local').Tunnel;
 
 var serverPort = 8888;
 var tunnel;
@@ -88,6 +88,14 @@ function launchBrowser(browser, url) {
     browser["tunnel_identifier"] = config.tunnelIdentifier;
   }
 
+  var timeout = parseInt(config.timeout);
+  if(! isNaN(timeout)) {
+    browser.timeout = timeout;
+  } else {
+    timeout = 300;
+  }
+  var activityTimeout = timeout - 10;
+
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
       console.log("Error from BrowserStack: ", err);
@@ -117,19 +125,28 @@ function launchBrowser(browser, url) {
           worker.activityTimeout = setTimeout(function () {
             if (!worker.acknowledged) {
               var subject = "Worker inactive for too long: " + worker.string;
-              var content = "Worker details:\n" + JSON.stringify(worker, null, 4);
-
-              utils.alertBrowserStack(subject, content);
+              var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
+              client.takeScreenshot(worker.id, function(error, screenshot) {
+                if (!error && screenshot.url) {
+                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
+                }
+                utils.alertBrowserStack(subject, content);
+              });
             }
-          }, 60 * 1000);
+          }, activityTimeout * 1000);
 
           setTimeout(function () {
             if (workers[key]) {
               var subject = "Tests timed out on: " + worker.string;
-              var content = "Worker details:\n" + JSON.stringify(worker, null, 4);
-              utils.alertBrowserStack(subject, content);
+              var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
+              client.takeScreenshot(worker.id, function(error, screenshot) {
+                if (!error && screenshot.url) {
+                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
+                }
+                utils.alertBrowserStack(subject, content);
+              });
             }
-          }, (config.timeout || 300) * 1000);
+          }, (activityTimeout * 1000));
         }
       });
     }, 2000);
@@ -145,7 +162,7 @@ var launchBrowsers = function(config, browser) {
       });
     } else {
       var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
-      launchBrowser(browser,url);              
+      launchBrowser(browser,url);
     }
   }, 100);
 }
