@@ -2,13 +2,13 @@
 
 var BrowserStack = require('browserstack'),
     fs = require('fs'),
-    utils = require('../lib/utils');
-    Server = require('../lib/server').Server;
-    config = require('../lib/config');
-    Tunnel = require('../lib/local').Tunnel;
-    ConfigParser = require('../lib/configParser').ConfigParser;
-var serverPort = 8888;
-var tunnel;
+    utils = require('../lib/utils'),
+    Server = require('../lib/server').Server,
+    config = require('../lib/config'),
+    Tunnel = require('../lib/local').Tunnel,
+    ConfigParser = require('../lib/configParser').ConfigParser,
+    serverPort = 8888,
+    tunnel;
 
 var client = BrowserStack.createClient({
   username: config.username,
