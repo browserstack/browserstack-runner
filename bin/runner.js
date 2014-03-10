@@ -2,13 +2,13 @@
 
 var BrowserStack = require('browserstack'),
     fs = require('fs'),
-    utils = require('../lib/utils');
-    Server = require('../lib/server').Server;
-    config = require('../lib/config');
-    Tunnel = require('../lib/local').Tunnel;
-
-var serverPort = 8888;
-var tunnel;
+    utils = require('../lib/utils'),
+    Server = require('../lib/server').Server,
+    config = require('../lib/config'),
+    Tunnel = require('../lib/local').Tunnel,
+    ConfigParser = require('../lib/configParser').ConfigParser,
+    serverPort = 8888,
+    tunnel;
 
 var client = BrowserStack.createClient({
   username: config.username,
@@ -168,22 +168,24 @@ var launchBrowsers = function(config, browser) {
 }
 
 if (config.browsers && config.browsers.length > 0) {
-  tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
-    console.log("Launching BrowserStack workers");
-    config.browsers.forEach(function(browser) {
-      if (browser.browser_version === "latest") {
-        console.log("[%s] Finding version.", utils.browserString(browser));
+  ConfigParser.parse(client, config.browsers, function(browsers){
+    tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
+      console.log("Launching BrowserStack workers");
+      browsers.forEach(function(browser) {
+        if (browser.browser_version === "latest") {
+          console.log("[%s] Finding version.", utils.browserString(browser));
 
-        client.getLatest(browser, function(err, version) {
-          console.log("[%s] Version is %s.",
-                      utils.browserString(browser), version);
-          browser.browser_version = version;
-          // So that all latest logs come in together
+          client.getLatest(browser, function(err, version) {
+            console.log("[%s] Version is %s.",
+                        utils.browserString(browser), version);
+                        browser.browser_version = version;
+                        // So that all latest logs come in together
+                        launchBrowsers(config, browser);
+          });
+        } else {
           launchBrowsers(config, browser);
-        });
-      } else {
-        launchBrowsers(config, browser);
-      }
+        }
+      });
     });
   });
 }
