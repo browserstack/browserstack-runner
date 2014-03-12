@@ -44,55 +44,75 @@ If nothing is provided as `preset` **default** is used.
 
 A sample configuration file:
 
-    {
-      "username": "<username>",
-      "key": "<key>",
-      "test_framework": "qunit/jasmine/mocha",
-      "test_path": ["relative/path/to/test/page1", "relative/path/to/test/page2"],
-      "browsers":   [{
-        "browser": "firefox",
-        "browser_version": "15.0",
-        "device": null,
-        "os": "OS X",
-        "os_version": "Snow Leopard"
-      },
-      {
-        "browser": "firefox",
-        "browser_version": "16.0",
-        "device": null,
-        "os": "Windows",
-        "os_version": "7"
-      },
-      {
-        "browser": "firefox",
-        "browser_version": "17.0",
-        "device": null,
-        "os": "Windows",
-        "os_version": "8"
-      },
-      {
-        "browser": "ie",
-        "browser_version": "8.0",
-        "device": null,
-        "os": "Windows",
-        "os_version": "7"
-      },
-      {
-        "browser": "ie",
-        "browser_version": "9.0",
-        "device": null,
-        "os": "Windows",
-        "os_version": "7"
-      },
-      {
-        "browser": "ie",
-        "browser_version": "10.0",
-        "device": null,
-        "os": "Windows",
-        "os_version": "8"
-      }]
-    }
+```json
+{
+  "username": "<username>",
+  "key": "<key>",
+  "test_framework": "qunit/jasmine/mocha",
+  "test_path": ["relative/path/to/test/page1", "relative/path/to/test/page2"],
+  "browsers":   [{
+    "browser": "firefox",
+    "browser_version": "15.0",
+    "device": null,
+    "os": "OS X",
+    "os_version": "Snow Leopard"
+  },
+  {
+    "browser": "firefox",
+    "browser_version": "16.0",
+    "device": null,
+    "os": "Windows",
+    "os_version": "7"
+  },
+  {
+    "browser": "firefox",
+    "browser_version": "17.0",
+    "device": null,
+    "os": "Windows",
+    "os_version": "8"
+  },
+  {
+    "browser": "ie",
+    "browser_version": "8.0",
+    "device": null,
+    "os": "Windows",
+    "os_version": "7"
+  },
+  {
+    "browser": "ie",
+    "browser_version": "9.0",
+    "device": null,
+    "os": "Windows",
+    "os_version": "7"
+  },
+  {
+    "browser": "ie",
+    "browser_version": "10.0",
+    "device": null,
+    "os": "Windows",
+    "os_version": "8"
+  }]
+}
+```
 
+Alternatively, if `os` and `os_version` granularity is not desired, following configuration can be used:
+- *browser*_current: will assign the latest version of the *browser*.
+- *browser*_previous: will assign the previous version of the *browser*.
+- *browser*_*version*: will assign the *version* specificed of the *browser*. Minor versions can be concatinated with underscore.
+
+Example:
+```json
+"browsers": [
+    "chrome_previous",
+    "chrome_current",
+    "firefox_previous",
+    "firefox_current",
+    "ie_6",
+    "ie_11",
+    "opera_12_1",
+    "safari_5_1"
+]
+```
 
 ### Enviroment variables
 
