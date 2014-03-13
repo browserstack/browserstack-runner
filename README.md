@@ -110,7 +110,14 @@ Example:
     "ie_6",
     "ie_11",
     "opera_12_1",
-    "safari_5_1"
+    "safari_5_1",
+    {
+      "browser": "ie",
+      "browser_version": "10.0",
+      "device": null,
+      "os": "Windows",
+      "os_version": "8"
+    }
 ]
 ```
 
