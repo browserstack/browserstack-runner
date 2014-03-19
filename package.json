@@ -11,6 +11,12 @@
     "browserstack": "1.0.1",
     "chalk": "0.4.0"
   },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/browserstack/browserstack-runner/blob/master/MIT-LICENSE.txt"
+    }
+  ],
   "bin": {
     "browserstack-runner": "bin/cli.js"
   }
