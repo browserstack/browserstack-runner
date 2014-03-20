@@ -1,4 +1,6 @@
 tmp
 node_modules
+lib/BrowserStackLocal
 browserstack.json
 browserstack-runner.pid
+browserstack-failed.json

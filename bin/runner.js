@@ -5,6 +5,7 @@ var BrowserStack = require('browserstack'),
     utils = require('../lib/utils'),
     Server = require('../lib/server').Server,
     config = require('../lib/config'),
+    failed = require('../lib/failed'),
     Tunnel = require('../lib/local').Tunnel,
     ConfigParser = require('../lib/configParser').ConfigParser,
     serverPort = 8888,
@@ -41,6 +42,8 @@ var cleanUp = function cleanUp () {
       });
     }
   }
+
+  failed.cleanUp();
 
   try {
     process.kill(tunnel.process.pid, 'SIGKILL');
@@ -130,7 +133,9 @@ function launchBrowser(browser, url) {
                 if (!error && screenshot.url) {
                   console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
                 }
-                utils.alertBrowserStack(subject, content);
+                utils.alertBrowserStack(subject, content, {}, function(){
+                  failed.add(worker.config);
+                });
               });
             }
           }, activityTimeout * 1000);
@@ -143,7 +148,9 @@ function launchBrowser(browser, url) {
                 if (!error && screenshot.url) {
                   console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
                 }
-                utils.alertBrowserStack(subject, content);
+                utils.alertBrowserStack(subject, content, {}, function(){
+                  failed.add(worker.config);
+                });
               });
             }
           }, (activityTimeout * 1000));
@@ -165,6 +172,10 @@ var launchBrowsers = function(config, browser) {
       launchBrowser(browser,url);
     }
   }, 100);
+}
+
+if (failed.browsers && failed.browsers.length > 0){
+  config.browsers = failed.browsers;
 }
 
 if (config.browsers && config.browsers.length > 0) {
