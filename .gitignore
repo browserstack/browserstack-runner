@@ -2,3 +2,4 @@ tmp
 node_modules
 browserstack.json
 browserstack-runner.pid
+lib/BrowserStackLocal
