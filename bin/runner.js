@@ -2,12 +2,15 @@
 
 var BrowserStack = require('browserstack'),
     fs = require('fs'),
+    chalk = require('chalk'),
     utils = require('../lib/utils'),
     Server = require('../lib/server').Server,
     config = require('../lib/config'),
     Tunnel = require('../lib/local').Tunnel,
     ConfigParser = require('../lib/configParser').ConfigParser,
     serverPort = 8888,
+    timeout = null,
+    activityTimeout = null,
     tunnel;
 
 var client = BrowserStack.createClient({
@@ -19,7 +22,8 @@ var pid_file = process.cwd() + '/browserstack-run.pid';
 fs.writeFileSync(pid_file, process.pid, 'utf-8')
 
 var workers = {};
-var cleanUp = function cleanUp () {
+var workerKeys = {};
+var cleanUp = function(signal) {
   try {
     server.close();
   } catch (e) {
@@ -29,18 +33,21 @@ var cleanUp = function cleanUp () {
   console.log("Exiting");
 
   for (var key in workers) {
+    var worker = workers[key];
     if (workers.hasOwnProperty(key)) {
-      client.terminateWorker(workers[key].id, function () {
+      client.terminateWorker(worker.id, function () {
         if (!workers[key]) {
           return;
         }
 
-        console.log('[%s] Terminated', workers[key].string);
-        clearTimeout(workers[key].activityTimeout);
-        delete workers[key]
+        console.log('[%s] Terminated', worker.string);
+        clearTimeout(worker.activityTimeout);
+        delete workers[key];
+        delete workerKeys[worker.id];
       });
     }
   }
+  if (statusPoller) statusPoller.stop();
 
   try {
     process.kill(tunnel.process.pid, 'SIGKILL');
@@ -48,14 +55,17 @@ var cleanUp = function cleanUp () {
     console.log("Non existent tunnel");
   }
   try {
-    fs.unlink(pid_file);
+    fs.unlinkSync(pid_file);
   } catch (e) {
     console.log("Non existent pid file.");
   }
+  if (signal) {
+    process.kill(process.pid, 'SIGTERM');
+  }
 };
 
-process.on('exit', cleanUp);
-process.on('SIGINT', cleanUp);
+process.on('exit', function() {cleanUp(false)});
+process.on('SIGINT', function() {cleanUp(true)});
 
 console.log("Launching server on port:", serverPort);
 
@@ -88,13 +98,13 @@ function launchBrowser(browser, url) {
     browser["tunnel_identifier"] = config.tunnelIdentifier;
   }
 
-  var timeout = parseInt(config.timeout);
+  timeout = parseInt(config.timeout);
   if(! isNaN(timeout)) {
     browser.timeout = timeout;
   } else {
     timeout = 300;
   }
-  var activityTimeout = timeout - 10;
+  activityTimeout = timeout - 10;
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
@@ -110,47 +120,9 @@ function launchBrowser(browser, url) {
     worker.config = browser;
     worker.string = browserString;
     workers[key] = worker;
-
-    var statusPoller = setInterval(function () {
-      client.getWorker(worker.id, function (err, _worker) {
-        if (worker.launched) {
-          return;
-        }
-
-        if (_worker.status === 'running') {
-          clearInterval(statusPoller);
-          console.log('[%s] Launched', worker.string);
-          worker.launched = true;
-
-          worker.activityTimeout = setTimeout(function () {
-            if (!worker.acknowledged) {
-              var subject = "Worker inactive for too long: " + worker.string;
-              var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
-              client.takeScreenshot(worker.id, function(error, screenshot) {
-                if (!error && screenshot.url) {
-                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
-                }
-                utils.alertBrowserStack(subject, content);
-              });
-            }
-          }, activityTimeout * 1000);
-
-          setTimeout(function () {
-            if (workers[key]) {
-              var subject = "Tests timed out on: " + worker.string;
-              var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
-              client.takeScreenshot(worker.id, function(error, screenshot) {
-                if (!error && screenshot.url) {
-                  console.log('[%s] Screenshot: %s', worker.string, screenshot.url);
-                }
-                utils.alertBrowserStack(subject, content);
-              });
-            }
-          }, (activityTimeout * 1000));
-        }
-      });
-    }, 2000);
+    workerKeys[worker.id] = {key: key, marked: false};
   });
+
 }
 
 var launchBrowsers = function(config, browser) {
@@ -166,6 +138,81 @@ var launchBrowsers = function(config, browser) {
     }
   }, 100);
 }
+
+var statusPoller = {
+  poller: null,
+
+  start: function() {
+    statusPoller.poller = setInterval(function () {
+      client.getWorkers(function (err, _workers) {
+        _workers = _workers.filter(function(currentValue, index, array) {
+          return currentValue.status == 'running' && workerKeys[currentValue.id] && !workerKeys[currentValue.id].marked;
+        });
+        for (var i in _workers) {
+          var _worker = _workers[i];
+          var workerData = workerKeys[_worker.id];
+          var worker = workers[workerData.key];
+          if (worker.launched) {
+            return;
+          }
+
+          if (_worker.status === 'running') {
+            //clearInterval(statusPoller);
+            console.log('[%s] Launched', worker.string);
+            worker.launched = true;
+            workerData.marked = true;
+
+            worker.activityTimeout = setTimeout(function () {
+              if (!worker.acknowledged) {
+                var subject = "Worker inactive for too long: " + worker.string;
+                var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
+                utils.alertBrowserStack(subject, content, null, function(){});
+                delete workers[workerData.key];
+                delete workerKeys[worker.id];
+                config.status += 1;
+                if (utils.objectSize(workers) === 0) {
+                  var color = config.status > 0 ? "red" : "green";
+                  console.log(chalk[color]("All tests done, failures: %d."), config.status);
+
+                  if (config.status > 0) {
+                    config.status = 1;
+                  }
+
+                  process.exit(config.status);
+                }
+              }
+            }, activityTimeout * 1000);
+
+            setTimeout(function () {
+              if (worker.acknowledged) {
+                var subject = "Tests timed out on: " + worker.string;
+                var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
+                utils.alertBrowserStack(subject, content, null, function(){});
+                delete workers[workerData.key];
+                delete workerKeys[worker.id];
+                config.status += 1;
+                if (utils.objectSize(workers) === 0) {
+                  var color = config.status > 0 ? "red" : "green";
+                  console.log(chalk[color]("All tests done, failures: %d."), config.status);
+
+                  if (config.status > 0) {
+                    config.status = 1;
+                  }
+
+                  process.exit(config.status);
+                }
+              }
+            }, (activityTimeout * 1000));
+          }
+        }
+      });
+    }, 2000);
+  },
+  
+  stop: function() {
+    clearInterval(statusPoller.poller);
+  }
+};
 
 if (config.browsers && config.browsers.length > 0) {
   ConfigParser.parse(client, config.browsers, function(browsers){
@@ -187,5 +234,6 @@ if (config.browsers && config.browsers.length > 0) {
         }
       });
     });
+    statusPoller.start();
   });
 }

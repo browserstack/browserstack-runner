@@ -5,7 +5,7 @@
   "homepage": "https://github.com/browserstack/browserstack-runner",
   "repository": {
     "type": "git",
-    "url": "git://github.com/browserstack/browserstack-runner.git"
+    "url": "https://github.com/browserstack/browserstack-runner.git"
   },
   "dependencies": {
     "browserstack": "1.0.1",
