@@ -96,7 +96,7 @@ A sample configuration file:
 ```
 
 Alternatively, if `os` and `os_version` granularity is not desired, following configuration can be used:
-- *browser*_current: will assign the latest version of the *browser*.
+- *browser*_current or *browser*_latest: will assign the latest version of the *browser*.
 - *browser*_previous: will assign the previous version of the *browser*.
 - *browser*_*version*: will assign the *version* specificed of the *browser*. Minor versions can be concatinated with underscore.
 
@@ -106,7 +106,7 @@ Example:
     "chrome_previous",
     "chrome_current",
     "firefox_previous",
-    "firefox_current",
+    "firefox_latest",
     "ie_6",
     "ie_11",
     "opera_12_1",
