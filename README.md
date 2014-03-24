@@ -95,6 +95,8 @@ A sample configuration file:
 }
 ```
 
+#### Compact `browsers` configuration
+
 Alternatively, if `os` and `os_version` granularity is not desired, following configuration can be used:
 - *browser*_current or *browser*_latest: will assign the latest version of the *browser*.
 - *browser*_previous: will assign the previous version of the *browser*.
@@ -104,7 +106,7 @@ Example:
 ```json
 "browsers": [
     "chrome_previous",
-    "chrome_current",
+    "chrome_latest",
     "firefox_previous",
     "firefox_latest",
     "ie_6",
