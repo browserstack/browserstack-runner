@@ -219,7 +219,7 @@ function runTests() {
       launchServer();
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
         statusPoller.start();
-        logger.info("Launching BrowserStack workers");
+        logger.info("Launching " + browsers.length + " workers");
         browsers.forEach(function(browser) {
           if (browser.browser_version === "latest") {
             logger.debug("[%s] Finding version.", utils.browserString(browser));
