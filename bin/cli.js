@@ -71,9 +71,10 @@ function launchServer() {
   server.listen(parseInt(serverPort, 10));
 }
 
-function launchBrowser(browser, url) {
+function launchBrowser(browser, path) {
+  var url = 'http://localhost:' + serverPort.toString() + '/' + path;
   var browserString = utils.browserString(browser);
-  logger.debug("[%s] Launching", browserString);
+  logger.debug("[%s] [%s] Launching", browserString, path);
 
   var key = utils.uuid();
 
@@ -118,6 +119,7 @@ function launchBrowser(browser, url) {
 
     worker.config = browser;
     worker.string = browserString;
+    worker.test_path = path;
     workers[key] = worker;
     workerKeys[worker.id] = {key: key, marked: false};
   });
@@ -125,15 +127,16 @@ function launchBrowser(browser, url) {
 }
 
 function launchBrowsers(config, browser) {
+  var multiple_tests = Object.prototype.toString.call(config.test_path) === '[object Array]';
+  var total_workers = config.browsers.length * (multiple_tests ? config.test_path.length : 1);
+  logger.info("Launching " + total_workers + " workers");
   setTimeout(function () {
-    if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+    if(multiple_tests){
       config.test_path.forEach(function(path){
-        var url = 'http://localhost:' + serverPort.toString() + '/' + path;
-        launchBrowser(browser,url);
+        launchBrowser(browser, path);
       });
     } else {
-      var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
-      launchBrowser(browser,url);
+      launchBrowser(browser, config.test_path);
     }
   }, 100);
 }
@@ -157,7 +160,7 @@ var statusPoller = {
 
           if (_worker.status === 'running') {
             //clearInterval(statusPoller);
-            logger.debug('[%s] Launched', worker.string);
+            logger.debug('[%s] [%s] Launched', worker.string, worker.test_path);
             worker.launched = true;
             workerData.marked = true;
 
@@ -219,7 +222,6 @@ function runTests() {
       launchServer();
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
         statusPoller.start();
-        logger.info("Launching " + browsers.length + " workers");
         browsers.forEach(function(browser) {
           if (browser.browser_version === "latest") {
             logger.debug("[%s] Finding version.", utils.browserString(browser));
