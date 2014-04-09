@@ -64,6 +64,14 @@ function cleanUp(signal) {
   }
 }
 
+function getTestBrowserInfo(browserString, path) {
+  var info = browserString;
+  if(config.multipleTest) {
+    info += ", " + path;
+  }
+  return info;
+}
+
 function launchServer() {
   logger.debug("Launching server on port:", serverPort);
 
@@ -74,7 +82,7 @@ function launchServer() {
 function launchBrowser(browser, path) {
   var url = 'http://localhost:' + serverPort.toString() + '/' + path;
   var browserString = utils.browserString(browser);
-  logger.debug("[%s] [%s] Launching", browserString, path);
+  logger.debug("[%s] Launching", getTestBrowserInfo(browserString, path));
 
   var key = utils.uuid();
 
@@ -129,10 +137,12 @@ function launchBrowser(browser, path) {
 function launchBrowsers(config, browser) {
   setTimeout(function () {
     if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+      config.multipleTest = config.test_path.length > 1? true : false;
       config.test_path.forEach(function(path){
         launchBrowser(browser, path);
       });
     } else {
+      config.multipleTest = false;
       launchBrowser(browser, config.test_path);
     }
   }, 100);
@@ -157,7 +167,7 @@ var statusPoller = {
 
           if (_worker.status === 'running') {
             //clearInterval(statusPoller);
-            logger.debug('[%s] [%s] Launched', worker.string, worker.test_path);
+            logger.debug('[%s] Launched', getTestBrowserInfo(worker.string, worker.test_path));
             worker.launched = true;
             workerData.marked = true;
 
