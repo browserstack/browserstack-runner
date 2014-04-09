@@ -23,30 +23,46 @@ var Log = require('../lib/logger'),
     logLevel,
     tunnel;
 
-function cleanUp(signal) {
+function terminateAllWorkers(callback) {
+  var cleanWorker = function(id, key) {
+    client.terminateWorker(id, function() {
+      var worker = workers[key];
+      if(worker) {
+        logger.debug('[%s] Terminated', worker.string);
+        clearTimeout(worker.activityTimeout);
+        delete workers[key];
+        delete workerKeys[worker.id];
+      }
+      if (utils.objectSize(workers) === 0) {
+        callback();
+      }
+    });
+  };
+
+  if (utils.objectSize(workers) === 0) {
+    callback();
+  } else {
+    for (var key in workers){
+      var worker = workers[key];
+      if (worker.id) {
+        cleanWorker(worker.id, key);
+      } else {
+        delete workers[key];
+        if (utils.objectSize(workers) === 0) {
+          callback();
+        }
+      }
+    }
+  }
+};
+
+function cleanUpAndExit(signal, status) {
   try {
     server.close();
   } catch (e) {
     logger.debug("Server already closed");
   }
 
-  logger.info("Exiting");
-
-  for (var key in workers) {
-    var worker = workers[key];
-    if (workers.hasOwnProperty(key)) {
-      client.terminateWorker(worker.id, function () {
-        if (!workers[key]) {
-          return;
-        }
-
-        logger.debug('[%s] Terminated', worker.string);
-        clearTimeout(worker.activityTimeout);
-        delete workers[key];
-        delete workerKeys[worker.id];
-      });
-    }
-  }
   if (statusPoller) statusPoller.stop();
 
   try {
@@ -59,8 +75,15 @@ function cleanUp(signal) {
   } catch (e) {
     logger.debug("Non existent pid file.");
   }
-  if (signal) {
-    process.kill(process.pid, 'SIGTERM');
+
+  if (signal == 'SIGTERM') {
+    logger.info("Exiting");
+    process.exit(status);
+  } else {
+    terminateAllWorkers(function() {
+      logger.info("Exiting");
+      process.exit(1);
+    });
   }
 }
 
@@ -177,7 +200,7 @@ var statusPoller = {
                     config.status = 1;
                   }
 
-                  process.exit(config.status);
+                  process.kill(process.pid, 'SIGTERM');
                 }
               }
             }, activityTimeout * 1000);
@@ -198,7 +221,7 @@ var statusPoller = {
                     config.status = 1;
                   }
 
-                  process.exit(config.status);
+                  process.kill(process.pid, 'SIGTERM');
                 }
               }
             }, (activityTimeout * 1000));
@@ -251,8 +274,8 @@ try {
     runTests();
     var pid_file = process.cwd() + '/browserstack-run.pid';
     fs.writeFileSync(pid_file, process.pid, 'utf-8')
-    process.on('exit', function() {cleanUp(false)});
-    process.on('SIGINT', function() {cleanUp(true)});
+    process.on('SIGINT', function() { cleanUpAndExit('SIGINT', 1) });
+    process.on('SIGTERM', function() { cleanUpAndExit('SIGTERM', config.status) });
   }
 } catch (e) {
   console.log(e);
