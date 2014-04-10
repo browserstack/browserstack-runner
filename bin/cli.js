@@ -35,6 +35,7 @@ function terminateAllWorkers(callback) {
       if(worker) {
         logger.debug('[%s] Terminated', worker.string);
         clearTimeout(worker.activityTimeout);
+        clearTimeout(worker.testActivityTimeout);
         delete workers[key];
         delete workerKeys[worker.id];
       }
@@ -220,7 +221,7 @@ var statusPoller = {
               }
             }, activityTimeout * 1000);
 
-            setTimeout(function () {
+            worker.testActivityTimeout = setTimeout(function () {
               if (worker.acknowledged) {
                 var subject = "Tests timed out on: " + worker.string;
                 var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
@@ -293,4 +294,3 @@ try {
   console.log(e);
   console.log('Invalid command.');
 }
-
