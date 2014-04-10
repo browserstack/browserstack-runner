@@ -5,6 +5,11 @@ if (process.argv[2] == '--verbose')
 else
   global.logLevel = "info";
 
+if (process.argv[2] == 'init') {
+  require('./init.js');
+  return;
+}
+
 var Log = require('../lib/logger'),
     logger = new Log(global.logLevel),
     BrowserStack = require('browserstack'),
@@ -30,6 +35,7 @@ function terminateAllWorkers(callback) {
       if(worker) {
         logger.debug('[%s] Terminated', worker.string);
         clearTimeout(worker.activityTimeout);
+        clearTimeout(worker.testActivityTimeout);
         delete workers[key];
         delete workerKeys[worker.id];
       }
@@ -215,7 +221,7 @@ var statusPoller = {
               }
             }, activityTimeout * 1000);
 
-            setTimeout(function () {
+            worker.testActivityTimeout = setTimeout(function () {
               if (worker.acknowledged) {
                 var subject = "Tests timed out on: " + worker.string;
                 var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
@@ -275,21 +281,16 @@ function runTests() {
 }
 
 try {
-  if (process.argv[2] == 'init') {
-    require('./init.js');
-  } else {
-    var client = BrowserStack.createClient({
-      username: config.username,
-      password: config.key
-    });
-    runTests();
-    var pid_file = process.cwd() + '/browserstack-run.pid';
-    fs.writeFileSync(pid_file, process.pid, 'utf-8')
-    process.on('SIGINT', function() { cleanUpAndExit('SIGINT', 1) });
-    process.on('SIGTERM', function() { cleanUpAndExit('SIGTERM', config.status) });
-  }
+  var client = BrowserStack.createClient({
+    username: config.username,
+    password: config.key
+  });
+  runTests();
+  var pid_file = process.cwd() + '/browserstack-run.pid';
+  fs.writeFileSync(pid_file, process.pid, 'utf-8')
+  process.on('SIGINT', function() { cleanUpAndExit('SIGINT', 1) });
+  process.on('SIGTERM', function() { cleanUpAndExit('SIGTERM', config.status) });
 } catch (e) {
   console.log(e);
   console.log('Invalid command.');
 }
-
