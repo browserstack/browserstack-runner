@@ -23,30 +23,46 @@ var Log = require('../lib/logger'),
     logLevel,
     tunnel;
 
-function cleanUp(signal) {
+function terminateAllWorkers(callback) {
+  var cleanWorker = function(id, key) {
+    client.terminateWorker(id, function() {
+      var worker = workers[key];
+      if(worker) {
+        logger.debug('[%s] Terminated', worker.string);
+        clearTimeout(worker.activityTimeout);
+        delete workers[key];
+        delete workerKeys[worker.id];
+      }
+      if (utils.objectSize(workers) === 0) {
+        callback();
+      }
+    });
+  };
+
+  if (utils.objectSize(workers) === 0) {
+    callback();
+  } else {
+    for (var key in workers){
+      var worker = workers[key];
+      if (worker.id) {
+        cleanWorker(worker.id, key);
+      } else {
+        delete workers[key];
+        if (utils.objectSize(workers) === 0) {
+          callback();
+        }
+      }
+    }
+  }
+};
+
+function cleanUpAndExit(signal, status) {
   try {
     server.close();
   } catch (e) {
     logger.debug("Server already closed");
   }
 
-  logger.info("Exiting");
-
-  for (var key in workers) {
-    var worker = workers[key];
-    if (workers.hasOwnProperty(key)) {
-      client.terminateWorker(worker.id, function () {
-        if (!workers[key]) {
-          return;
-        }
-
-        logger.debug('[%s] Terminated', worker.string);
-        clearTimeout(worker.activityTimeout);
-        delete workers[key];
-        delete workerKeys[worker.id];
-      });
-    }
-  }
   if (statusPoller) statusPoller.stop();
 
   try {
@@ -59,9 +75,24 @@ function cleanUp(signal) {
   } catch (e) {
     logger.debug("Non existent pid file.");
   }
-  if (signal) {
-    process.kill(process.pid, 'SIGTERM');
+
+  if (signal == 'SIGTERM') {
+    logger.info("Exiting");
+    process.exit(status);
+  } else {
+    terminateAllWorkers(function() {
+      logger.info("Exiting");
+      process.exit(1);
+    });
   }
+}
+
+function getTestBrowserInfo(browserString, path) {
+  var info = browserString;
+  if(config.multipleTest) {
+    info += ", " + path;
+  }
+  return info;
 }
 
 function launchServer() {
@@ -71,9 +102,10 @@ function launchServer() {
   server.listen(parseInt(serverPort, 10));
 }
 
-function launchBrowser(browser, url) {
+function launchBrowser(browser, path) {
+  var url = 'http://localhost:' + serverPort.toString() + '/' + path;
   var browserString = utils.browserString(browser);
-  logger.debug("[%s] Launching", browserString);
+  logger.debug("[%s] Launching", getTestBrowserInfo(browserString, path));
 
   var key = utils.uuid();
 
@@ -118,6 +150,7 @@ function launchBrowser(browser, url) {
 
     worker.config = browser;
     worker.string = browserString;
+    worker.test_path = path;
     workers[key] = worker;
     workerKeys[worker.id] = {key: key, marked: false};
   });
@@ -127,13 +160,13 @@ function launchBrowser(browser, url) {
 function launchBrowsers(config, browser) {
   setTimeout(function () {
     if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+      config.multipleTest = config.test_path.length > 1? true : false;
       config.test_path.forEach(function(path){
-        var url = 'http://localhost:' + serverPort.toString() + '/' + path;
-        launchBrowser(browser,url);
+        launchBrowser(browser, path);
       });
     } else {
-      var url = 'http://localhost:' + serverPort.toString() + '/' + config.test_path;
-      launchBrowser(browser,url);
+      config.multipleTest = false;
+      launchBrowser(browser, config.test_path);
     }
   }, 100);
 }
@@ -157,7 +190,7 @@ var statusPoller = {
 
           if (_worker.status === 'running') {
             //clearInterval(statusPoller);
-            logger.debug('[%s] Launched', worker.string);
+            logger.debug('[%s] Launched', getTestBrowserInfo(worker.string, worker.test_path));
             worker.launched = true;
             workerData.marked = true;
 
@@ -177,7 +210,7 @@ var statusPoller = {
                     config.status = 1;
                   }
 
-                  process.exit(config.status);
+                  process.kill(process.pid, 'SIGTERM');
                 }
               }
             }, activityTimeout * 1000);
@@ -198,7 +231,7 @@ var statusPoller = {
                     config.status = 1;
                   }
 
-                  process.exit(config.status);
+                  process.kill(process.pid, 'SIGTERM');
                 }
               }
             }, (activityTimeout * 1000));
@@ -219,7 +252,8 @@ function runTests() {
       launchServer();
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
         statusPoller.start();
-        logger.info("Launching " + browsers.length + " workers");
+        var total_workers = config.browsers.length * (Object.prototype.toString.call(config.test_path) === '[object Array]' ? config.test_path.length : 1);
+        logger.info("Launching " + total_workers + " workers");
         browsers.forEach(function(browser) {
           if (browser.browser_version === "latest") {
             logger.debug("[%s] Finding version.", utils.browserString(browser));
@@ -251,8 +285,8 @@ try {
     runTests();
     var pid_file = process.cwd() + '/browserstack-run.pid';
     fs.writeFileSync(pid_file, process.pid, 'utf-8')
-    process.on('exit', function() {cleanUp(false)});
-    process.on('SIGINT', function() {cleanUp(true)});
+    process.on('SIGINT', function() { cleanUpAndExit('SIGINT', 1) });
+    process.on('SIGTERM', function() { cleanUpAndExit('SIGTERM', config.status) });
   }
 } catch (e) {
   console.log(e);
