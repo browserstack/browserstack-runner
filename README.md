@@ -142,7 +142,7 @@ Add the following in `browserstack.json`
 ```json
 ...
 "proxy": {
-    "host": "localhost",
+    "hostname": "localhost",
     "port": 3128,
     "username": "foo",
     "password": "bar"
