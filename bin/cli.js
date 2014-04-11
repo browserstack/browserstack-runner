@@ -218,7 +218,6 @@ var statusPoller = {
 
 function runTests() {
   if (config.proxy) {
-    console.log(config.proxy);
     tunnelingAgent = tunnel.httpOverHttp({
       proxy: config.proxy;
     });
