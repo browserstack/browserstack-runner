@@ -1,0 +1,10 @@
+{
+  "username": "NakulAggarwal",
+  "key": "1FKyBShTNysamxvJBG3UY",
+  "test_path": "test.html",
+  "test_framework": "mocha",
+  "debug": true,
+  "build": "RahulNew",
+  "browsers": [
+  ]
+}

@@ -277,6 +277,8 @@ function runTests() {
         });
       });
     });
+  } else {
+    launchServer();
   }
 }
 
