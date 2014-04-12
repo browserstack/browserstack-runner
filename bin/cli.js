@@ -219,7 +219,7 @@ var statusPoller = {
 function runTests() {
   if (config.proxy) {
     tunnelingAgent = tunnel.httpOverHttp({
-      proxy: config.proxy;
+      proxy: config.proxy
     });
     var oldhttpreq = http.request;
     http.request = function (options, callback) {
