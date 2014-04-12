@@ -19,6 +19,8 @@ var Log = require('../lib/logger'),
     utils = require('../lib/utils'),
     Server = require('../lib/server').Server,
     Tunnel = require('../lib/local').Tunnel,
+    tunnel = require('tunnel'),
+    http = require('http'),
     ConfigParser = require('../lib/configParser').ConfigParser,
     serverPort = 8888,
     timeout,
@@ -26,6 +28,7 @@ var Log = require('../lib/logger'),
     workers = {},
     workerKeys = {},
     logLevel,
+    tunnelingAgent,
     tunnel;
 
 function terminateAllWorkers(callback) {
@@ -253,6 +256,16 @@ var statusPoller = {
 };
 
 function runTests() {
+  if (config.proxy) {
+    tunnelingAgent = tunnel.httpOverHttp({
+      proxy: config.proxy
+    });
+    var oldhttpreq = http.request;
+    http.request = function (options, callback) {
+      options.agent = tunnelingAgent;
+      return oldhttpreq.call(null, options, callback);
+    };
+  }
   if (config.browsers && config.browsers.length > 0) {
     ConfigParser.parse(client, config.browsers, function(browsers){
       launchServer();

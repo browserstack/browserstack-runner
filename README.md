@@ -137,6 +137,18 @@ Identifier for the current instance of the tunnel process. In `TRAVIS` setup `TR
 * `BROWSERSTACK_JSON`:
 Path to the browserstack.json file. If null, `browserstack.json` in the root directory will be used.
 
+### Proxy support for BrowserStack local
+Add the following in `browserstack.json`
+```json
+...
+"proxy": {
+    "host": "localhost",
+    "port": 3128,
+    "username": "foo",
+    "password": "bar"
+}
+...
+```
 
 ### Secure Information
 
