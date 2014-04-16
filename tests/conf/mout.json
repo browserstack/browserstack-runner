@@ -1,0 +1,9 @@
+{
+  "username": "BROWSERSTACK_USERNAME",
+  "key": "BROWSERSTACK_KEY",
+  "test_path": "tests/runner.html",
+  "test_framework": "jasmine",
+  "debug": true,
+  "browsers": [
+  ]
+}
