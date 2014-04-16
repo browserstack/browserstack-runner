@@ -39,9 +39,11 @@ class Test
     execute("cd #{repo_path}#{reponame} && npm install")
     execute("cd #{repo_path}#{reponame} && cp #{conf_path}#{reponame}.json #{repo_path}#{reponame}/browserstack.json")
     pid = runBg("cd #{repo_path}#{reponame} && ../../../bin/cli.js", 1, "#{test_framework}-#{reponame}", passed_array)
+    sleep(1)
     execute("open http://localhost:8888/#{browser_url}")
     Process.wait(pid)
     sleep(1)
+    execute("cd #{repo_path}#{reponame} && git clean -f -d && git reset --hard")
   end
   
   def qunit
