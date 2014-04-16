@@ -3,7 +3,6 @@
   "key": "BROWSERSTACK_KEY",
   "test_path": "test/index.html",
   "debug": true,
-  "build": "RahulNew",
   "browsers": [
   ]
 }

@@ -4,7 +4,6 @@
   "test_path": "tests/runner.html",
   "test_framework": "jasmine",
   "debug": true,
-  "build": "RahulNew",
   "browsers": [
   ]
 }
