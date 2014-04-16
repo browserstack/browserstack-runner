@@ -1,6 +1,6 @@
 {
-  "username": "NakulAggarwal",
-  "key": "1FKyBShTNysamxvJBG3UY",
+  "username": "BROWSERSTACK_USERNAME",
+  "key": "BROWSERSTACK_KEY",
   "test_path": "test.html",
   "test_framework": "mocha",
   "debug": true,
