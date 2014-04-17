@@ -10,3 +10,6 @@
 [submodule "tests/external-repos/mout"]
 	path = tests/external-repos/mout
 	url = https://github.com/browserstack/mout
+[submodule "tests/external-repos/Comparatorsjs"]
+	path = tests/external-repos/Comparatorsjs
+	url = https://github.com/spencerwi/Comparators.js.git

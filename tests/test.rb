@@ -64,11 +64,16 @@ class Test
     run_project("mout", "jasmine", ["978 of 978 passed"], "tests/runner.html")
   end
 
+  def jasmine2
+    run_project("Comparatorsjs", "jasmine2", ["6 of 6 passed"], "comparators.spec-runner.html")
+  end
+
   def run
     execute("cd #{RUNNER_DIR} && git submodule init && git submodule update")
     qunit
     mocha
     jasmine
+    jasmine2
   end
 end
 
