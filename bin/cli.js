@@ -290,6 +290,8 @@ function runTests() {
         });
       });
     });
+  } else {
+    launchServer();
   }
 }
 
