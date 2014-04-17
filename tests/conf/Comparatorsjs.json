@@ -1,0 +1,9 @@
+{
+  "username": "BROWSERSTACK_USERNAME",
+  "key": "BROWSERSTACK_KEY",
+  "test_path": "comparators.spec-runner.html",
+  "test_framework": "jasmine2",
+  "debug": true,
+  "browsers": [
+  ]
+}
