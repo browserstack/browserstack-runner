@@ -1,0 +1,15 @@
+[submodule "tests/external-repos/underscorejs"]
+	path = tests/external-repos/underscorejs
+	url = https://github.com/browserstack/underscore
+[submodule "tests/external-repos/Modernizr"]
+	path = tests/external-repos/Modernizr
+	url = https://github.com/browserstack/Modernizr
+[submodule "tests/external-repos/url.js"]
+	path = tests/external-repos/url.js
+	url = https://github.com/browserstack/url.js.git
+[submodule "tests/external-repos/mout"]
+	path = tests/external-repos/mout
+	url = https://github.com/browserstack/mout
+[submodule "tests/external-repos/Comparatorsjs"]
+	path = tests/external-repos/Comparatorsjs
+	url = https://github.com/browserstack/Comparators.js

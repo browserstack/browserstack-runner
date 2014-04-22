@@ -1,7 +1,7 @@
 A command line interface to run browser tests over BrowserStack.
 
 ## Install
-Go to the `browserstack-runner` directory.  
+Go to the `browserstack-runner` directory.
 Install browserstack-runner
 
     npm -g install
@@ -36,7 +36,7 @@ If nothing is provided as `preset` **default** is used.
    in a browser.
 
  - *test_framework*: Specify test framework which will execute the tests.
-    We support qunit, jasmine and mocha.
+    We support qunit, jasmine, jasmine 2.0 and mocha.
 
  - *timeout*: Specify worker timeout with BrowserStack.
 
@@ -48,7 +48,7 @@ A sample configuration file:
 {
   "username": "<username>",
   "key": "<key>",
-  "test_framework": "qunit/jasmine/mocha",
+  "test_framework": "qunit/jasmine/jasmine2/mocha",
   "test_path": ["relative/path/to/test/page1", "relative/path/to/test/page2"],
   "browsers":   [{
     "browser": "firefox",
