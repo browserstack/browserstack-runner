@@ -1,12 +1,18 @@
 #! /usr/bin/env node
 
-if (process.argv[2] == '--verbose')
+todo = process.argv[2];
+
+if (todo == '--verbose')
   global.logLevel = "debug";
 else
   global.logLevel = "info";
 
-if (process.argv[2] == 'init') {
+
+if (todo == 'init') {
   require('./init.js');
+  return;
+} else if(todo == '--version') {
+  require('./version.js');
   return;
 }
 
