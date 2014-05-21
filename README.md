@@ -42,7 +42,7 @@ If nothing is provided as `preset` **default** is used.
 
  - *browsers*: A list of browsers on which tests are to be run.
 
-A sample configuration file:
+A sample configuration file (list: http://www.browserstack.com/list-of-browsers-and-platforms?product=live):
 
 ```json
 {
@@ -84,6 +84,16 @@ A sample configuration file:
     "device": null,
     "os": "Windows",
     "os_version": "7"
+  },
+  {
+    "os": "android",
+    "os_version": "4.0",
+    "device": "Samsung Galaxy Nexus"
+  },
+  {
+    "os": "ios",
+    "os_version": "7.0",
+    "device": "iPhone 5S"
   },
   {
     "browser": "ie",
