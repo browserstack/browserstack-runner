@@ -125,7 +125,7 @@ Example:
 
 ### Enviroment variables
 
-* `BROWSERSTACK_USER`:
+* `BROWSERSTACK_USERNAME`:
 BrowserStack user name.
 
 * `BROWSERSTACK_KEY`:
