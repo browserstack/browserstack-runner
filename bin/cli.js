@@ -32,6 +32,7 @@ var Log = require('../lib/logger'),
     timeout,
     activityTimeout,
     workers = {},
+    browserToWorker = {},
     workerKeys = {},
     logLevel,
     tunnelingAgent,
@@ -176,9 +177,13 @@ function launchBrowsers(config, browser) {
   setTimeout(function () {
     if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
       config.multipleTest = config.test_path.length > 1? true : false;
-      config.test_path.forEach(function(path){
-        launchBrowser(browser, path);
-      });
+      if(config.reuseWorker) {
+        launchBrowser(browser, config.test_path[0]);
+      } else {
+        config.test_path.forEach(function(path){
+          launchBrowser(browser, path);
+        });
+      }
     } else {
       config.multipleTest = false;
       launchBrowser(browser, config.test_path);
