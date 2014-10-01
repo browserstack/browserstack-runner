@@ -104,7 +104,7 @@ function cleanUpAndExit(signal, status) {
 
 function getTestBrowserInfo(browserString, path) {
   var info = browserString;
-  if(config.multipleTest) {
+  if (config.multipleTest) {
     info += ", " + path;
   }
   return info;
@@ -145,7 +145,7 @@ function launchBrowser(browser, path) {
   }
 
   timeout = parseInt(config.timeout);
-  if(! isNaN(timeout)) {
+  if (!isNaN(timeout)) {
     browser.timeout = timeout;
   } else {
     timeout = 300;
@@ -166,6 +166,7 @@ function launchBrowser(browser, path) {
     worker.config = browser;
     worker.string = browserString;
     worker.test_path = path;
+    worker.path_index = 0;
     workers[key] = worker;
     workerKeys[worker.id] = {key: key, marked: false};
   });
@@ -174,11 +175,9 @@ function launchBrowser(browser, path) {
 
 function launchBrowsers(config, browser) {
   setTimeout(function () {
-    if(Object.prototype.toString.call(config.test_path) === '[object Array]'){
+    if (Object.prototype.toString.call(config.test_path) === '[object Array]'){
       config.multipleTest = config.test_path.length > 1? true : false;
-      config.test_path.forEach(function(path){
-        launchBrowser(browser, path);
-      });
+      launchBrowser(browser, config.test_path[0]);
     } else {
       config.multipleTest = false;
       launchBrowser(browser, config.test_path);
@@ -277,8 +276,8 @@ function runTests() {
       launchServer();
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
         statusPoller.start();
-        var total_workers = config.browsers.length * (Object.prototype.toString.call(config.test_path) === '[object Array]' ? config.test_path.length : 1);
-        logger.info("Launching " + total_workers + " workers");
+        var total_runs = config.browsers.length * (Object.prototype.toString.call(config.test_path) === '[object Array]' ? config.test_path.length : 1);
+        logger.info("Launching " + config.browsers.length + " worker(s) for " + total_runs + " run(s).");
         browsers.forEach(function(browser) {
           if (browser.browser_version === "latest") {
             logger.debug("[%s] Finding version.", utils.browserString(browser));

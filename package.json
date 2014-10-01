@@ -8,7 +8,7 @@
     "url": "https://github.com/browserstack/browserstack-runner.git"
   },
   "dependencies": {
-    "browserstack": "1.0.1",
+    "browserstack": "1.1.0",
     "chalk": "0.4.0",
     "tunnel": "0.0.3"
   },
