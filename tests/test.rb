@@ -12,7 +12,7 @@ def runBg(cmd, linestomatch, genre, test_strings)
     matched_counter = 0
     IO.popen(cmd) {|io|
       io.each {|line|
-        if line.match(/Completed in /)
+        if line.match(/ran for/)
           counter += 1
           puts "[#{genre.upcase}] : " + line
           test_strings.each do |test_string|
@@ -45,27 +45,27 @@ class Test
     sleep(1)
     execute("cd #{repo_path}#{reponame} && git clean -f -d && git reset --hard")
   end
-  
+
   def qunit
-    run_project("underscorejs", "qunit", ["631 of 631 passed"], "test/index.html")
-    run_project("Modernizr", "qunit", ["20 of 41 passed"], "test/index.html")
+    run_project("underscorejs", "qunit", ["631 passed"], "test/index.html")
+    run_project("Modernizr", "qunit", ["20 passed"], "test/index.html")
     # https://github.com/bitovi/funcunit/
     # https://github.com/twbs/bootstrap
   end
 
   def mocha
-    run_project("url.js", "mocha", ["35 of 35 passed"], "test.html")    
+    run_project("url.js", "mocha", ["35 passed"], "test.html")
     # https://github.com/browserstack/microjungle
     # https://github.com/dhimil/mocha
     # https://github.com/auth0/auth0.js
   end
 
   def jasmine
-    run_project("mout", "jasmine", ["978 of 978 passed"], "tests/runner.html")
+    run_project("mout", "jasmine", ["978 passed"], "tests/runner.html")
   end
 
   def jasmine2
-    run_project("Comparatorsjs", "jasmine2", ["6 of 6 passed"], "comparators.spec-runner.html")
+    run_project("Comparatorsjs", "jasmine2", ["6 passed"], "comparators.spec-runner.html")
   end
 
   def run

@@ -92,11 +92,11 @@ function cleanUpAndExit(signal, status) {
   }
 
   if (signal == 'SIGTERM') {
-    logger.info("Exiting");
+    logger.debug("Exiting");
     process.exit(status);
   } else {
     terminateAllWorkers(function() {
-      logger.info("Exiting");
+      logger.debug("Exiting");
       process.exit(1);
     });
   }
