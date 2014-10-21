@@ -1,17 +1,17 @@
 #! /usr/bin/env node
 
-todo = process.argv[2];
+var todo = process.argv[2];
 
-if (todo == '--verbose')
-  global.logLevel = "debug";
-else
-  global.logLevel = "info";
+if (todo === '--verbose') {
+  global.logLevel = 'debug';
+} else {
+  global.logLevel = 'info';
+}
 
-
-if (todo == 'init') {
+if (todo === 'init') {
   require('./init.js');
   return;
-} else if(todo == '--version') {
+} else if (todo === '--version') {
   require('./version.js');
   return;
 }
@@ -29,11 +29,11 @@ var Log = require('../lib/logger'),
     http = require('http'),
     ConfigParser = require('../lib/configParser').ConfigParser,
     serverPort = 8888,
+    server,
     timeout,
     activityTimeout,
     workers = {},
     workerKeys = {},
-    logLevel,
     tunnelingAgent,
     tunnel;
 
@@ -69,34 +69,36 @@ function terminateAllWorkers(callback) {
       }
     }
   }
-};
+}
 
 function cleanUpAndExit(signal, status) {
   try {
     server.close();
   } catch (e) {
-    logger.debug("Server already closed");
+    logger.debug('Server already closed');
   }
 
-  if (statusPoller) statusPoller.stop();
+  if (statusPoller) {
+    statusPoller.stop();
+  }
 
   try {
     process.kill(tunnel.process.pid, 'SIGKILL');
   } catch (e) {
-    logger.debug("Non existent tunnel");
+    logger.debug('Non existent tunnel');
   }
   try {
     fs.unlinkSync(pid_file);
   } catch (e) {
-    logger.debug("Non existent pid file.");
+    logger.debug('Non existent pid file.');
   }
 
-  if (signal == 'SIGTERM') {
-    logger.info("Exiting");
+  if (signal === 'SIGTERM') {
+    logger.debug('Exiting');
     process.exit(status);
   } else {
     terminateAllWorkers(function() {
-      logger.info("Exiting");
+      logger.debug('Exiting');
       process.exit(1);
     });
   }
@@ -105,22 +107,22 @@ function cleanUpAndExit(signal, status) {
 function getTestBrowserInfo(browserString, path) {
   var info = browserString;
   if (config.multipleTest) {
-    info += ", " + path;
+    info += ', ' + path;
   }
   return info;
 }
 
 function launchServer() {
-  logger.debug("Launching server on port:", serverPort);
+  logger.debug('Launching server on port:', serverPort);
 
-  var server = new Server(client, workers);
+  server = new Server(client, workers);
   server.listen(parseInt(serverPort, 10));
 }
 
 function launchBrowser(browser, path) {
   var url = 'http://localhost:' + serverPort.toString() + '/' + path;
   var browserString = utils.browserString(browser);
-  logger.debug("[%s] Launching", getTestBrowserInfo(browserString, path));
+  logger.debug('[%s] Launching', getTestBrowserInfo(browserString, path));
 
   var key = utils.uuid();
 
@@ -141,7 +143,7 @@ function launchBrowser(browser, path) {
   }
 
   if(config.tunnelIdentifier) {
-    browser["tunnel_identifier"] = config.tunnelIdentifier;
+    browser['tunnel_identifier'] = config.tunnelIdentifier;
   }
 
   timeout = parseInt(config.timeout);
@@ -154,9 +156,9 @@ function launchBrowser(browser, path) {
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
-      logger.info("Error from BrowserStack: ", err);
-      utils.alertBrowserStack("Failed to launch worker",
-                              "Arguments: " + JSON.stringify({
+      logger.info('Error from BrowserStack: ', err);
+      utils.alertBrowserStack('Failed to launch worker',
+                              'Arguments: ' + JSON.stringify({
                                 err: err,
                                 worker: worker
                               }, null, 4));
@@ -191,11 +193,9 @@ var statusPoller = {
   start: function() {
     statusPoller.poller = setInterval(function () {
       client.getWorkers(function (err, _workers) {
-        _workers = _workers.filter(function(currentValue, index, array) {
-          return currentValue.status == 'running' && workerKeys[currentValue.id] && !workerKeys[currentValue.id].marked;
-        });
-        for (var i in _workers) {
-          var _worker = _workers[i];
+        _workers.filter(function(currentValue) {
+          return currentValue.status === 'running' && workerKeys[currentValue.id] && !workerKeys[currentValue.id].marked;
+        }).forEach(function(_worker) {
           var workerData = workerKeys[_worker.id];
           var worker = workers[workerData.key];
           if (worker.launched) {
@@ -210,15 +210,15 @@ var statusPoller = {
 
             worker.activityTimeout = setTimeout(function () {
               if (!worker.acknowledged) {
-                var subject = "Worker inactive for too long: " + worker.string;
-                var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
+                var subject = 'Worker inactive for too long: ' + worker.string;
+                var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 utils.alertBrowserStack(subject, content, null, function(){});
                 delete workers[workerData.key];
                 delete workerKeys[worker.id];
                 config.status += 1;
                 if (utils.objectSize(workers) === 0) {
-                  var color = config.status > 0 ? "red" : "green";
-                  logger.info(chalk[color]("All tests done, failures: %d."), config.status);
+                  var color = config.status > 0 ? 'red' : 'green';
+                  logger.info(chalk[color]('All tests done, failures: %d.'), config.status);
 
                   if (config.status > 0) {
                     config.status = 1;
@@ -231,15 +231,15 @@ var statusPoller = {
 
             worker.testActivityTimeout = setTimeout(function () {
               if (worker.acknowledged) {
-                var subject = "Tests timed out on: " + worker.string;
-                var content = "Worker details:\n" + JSON.stringify(worker.config, null, 4);
+                var subject = 'Tests timed out on: ' + worker.string;
+                var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 utils.alertBrowserStack(subject, content, null, function(){});
                 delete workers[workerData.key];
                 delete workerKeys[worker.id];
                 config.status += 1;
                 if (utils.objectSize(workers) === 0) {
-                  var color = config.status > 0 ? "red" : "green";
-                  logger.info(chalk[color]("All tests done, failures: %d."), config.status);
+                  var color = config.status > 0 ? 'red' : 'green';
+                  logger.info(chalk[color]('All tests done, failures: %d.'), config.status);
 
                   if (config.status > 0) {
                     config.status = 1;
@@ -250,7 +250,7 @@ var statusPoller = {
               }
             }, (activityTimeout * 1000));
           }
-        }
+        });
       });
     }, 2000);
   },
@@ -277,13 +277,13 @@ function runTests() {
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
         statusPoller.start();
         var total_runs = config.browsers.length * (Object.prototype.toString.call(config.test_path) === '[object Array]' ? config.test_path.length : 1);
-        logger.info("Launching " + config.browsers.length + " worker(s) for " + total_runs + " run(s).");
+        logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
         browsers.forEach(function(browser) {
-          if (browser.browser_version === "latest") {
-            logger.debug("[%s] Finding version.", utils.browserString(browser));
+          if (browser.browser_version === 'latest') {
+            logger.debug('[%s] Finding version.', utils.browserString(browser));
 
             client.getLatest(browser, function(err, version) {
-              logger.debug("[%s] Version is %s.",
+              logger.debug('[%s] Version is %s.',
                            utils.browserString(browser), version);
                            browser.browser_version = version;
                            // So that all latest logs come in together
@@ -307,9 +307,13 @@ try {
   });
   runTests();
   var pid_file = process.cwd() + '/browserstack-run.pid';
-  fs.writeFileSync(pid_file, process.pid, 'utf-8')
-  process.on('SIGINT', function() { cleanUpAndExit('SIGINT', 1) });
-  process.on('SIGTERM', function() { cleanUpAndExit('SIGTERM', config.status) });
+  fs.writeFileSync(pid_file, process.pid, 'utf-8');
+  process.on('SIGINT', function() {
+    cleanUpAndExit('SIGINT', 1);
+  });
+  process.on('SIGTERM', function() {
+    cleanUpAndExit('SIGTERM', config.status);
+  });
 } catch (e) {
   console.log(e);
   console.log('Invalid command.');
