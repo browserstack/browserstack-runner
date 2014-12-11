@@ -120,7 +120,7 @@ function launchServer() {
 }
 
 function launchBrowser(browser, path) {
-  var url = 'http://localhost:' + serverPort.toString() + '/' + path.replace(/\\/gi, '/');
+  var url = 'http://localhost:' + serverPort.toString() + '/' + path.replace(/\\/g, '/');
   var browserString = utils.browserString(browser);
   logger.debug('[%s] Launching', getTestBrowserInfo(browserString, path));
 
