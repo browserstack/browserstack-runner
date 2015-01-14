@@ -1,7 +1,7 @@
 {
   "name": "browserstack-runner",
   "description": "A command line interface to run browser tests over BrowserStack",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://github.com/browserstack/browserstack-runner",
   "repository": {
     "type": "git",
@@ -13,7 +13,8 @@
     "tunnel": "0.0.3"
   },
   "devDependencies": {
-    "mocha": "~1.15.1"
+    "jshint": "2.5.6",
+    "mocha": "1.15.1"
   },
   "licenses": [
     {
@@ -23,5 +24,8 @@
   ],
   "bin": {
     "browserstack-runner": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "node_modules/.bin/mocha tests/unit && node_modules/.bin/jshint lib/*.js bin/"
   }
 }
