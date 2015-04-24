@@ -15,6 +15,12 @@ You can also install locally and run the local binary:
     npm install browserstack-runner
     node_modules/.bin/browserstack-runner
 
+If you're getting an error `EACCES open ... BrowserStackLocal`, configure npm to install modules using something other than the default "nobody" user:
+
+    npm -g config set user [user]
+
+Where `[user]` is replaced with a local user with enough permissions.
+
 ## Configuration
 
 To run browser tests on BrowserStack infrastructure, you need to create a `browserstack.json` file in project's root directory (the directory from which tests are run), by running this command:
