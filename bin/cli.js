@@ -177,7 +177,7 @@ function launchBrowser(browser, path) {
 
 function launchBrowsers(config, browser) {
   setTimeout(function () {
-    if (Object.prototype.toString.call(config.test_path) === '[object Array]'){
+    if (Array.isArray(config.test_path)){
       config.multipleTest = config.test_path.length > 1? true : false;
       launchBrowser(browser, config.test_path[0]);
     } else {
@@ -276,7 +276,7 @@ function runTests() {
       launchServer();
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
         statusPoller.start();
-        var total_runs = config.browsers.length * (Object.prototype.toString.call(config.test_path) === '[object Array]' ? config.test_path.length : 1);
+        var total_runs = config.browsers.length * (Array.isArray(config.test_path) ? config.test_path.length : 1);
         logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
         browsers.forEach(function(browser) {
           if (browser.browser_version === 'latest') {
