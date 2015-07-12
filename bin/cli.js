@@ -120,7 +120,7 @@ function launchServer() {
 }
 
 function launchBrowser(browser, path) {
-  var url = 'http://localhost:' + serverPort.toString() + '/' + path;
+  var url = 'http://localhost:' + serverPort.toString() + '/' + path.replace(/\\/g, '/');
   var browserString = utils.browserString(browser);
   logger.debug('[%s] Launching', getTestBrowserInfo(browserString, path));
 
@@ -224,7 +224,7 @@ var statusPoller = {
                     config.status = 1;
                   }
 
-                  process.kill(process.pid, 'SIGTERM');
+                  process.exit('SIGTERM');
                 }
               }
             }, activityTimeout * 1000);
@@ -245,7 +245,7 @@ var statusPoller = {
                     config.status = 1;
                   }
 
-                  process.kill(process.pid, 'SIGTERM');
+                  process.exit('SIGTERM');
                 }
               }
             }, (activityTimeout * 1000));
@@ -308,11 +308,8 @@ try {
   runTests();
   var pid_file = process.cwd() + '/browserstack-run.pid';
   fs.writeFileSync(pid_file, process.pid, 'utf-8');
-  process.on('SIGINT', function() {
-    cleanUpAndExit('SIGINT', 1);
-  });
-  process.on('SIGTERM', function() {
-    cleanUpAndExit('SIGTERM', config.status);
+  process.on('exit', function(signal){
+    cleanUpAndExit(signal, config.status);
   });
 } catch (e) {
   console.log(e);
