@@ -32,6 +32,7 @@ var Log = require('../lib/logger'),
     server,
     timeout,
     activityTimeout,
+    acknowledgeTimeout,
     workers = {},
     workerKeys = {},
     tunnelingAgent,
@@ -153,6 +154,7 @@ function launchBrowser(browser, path) {
     timeout = 300;
   }
   activityTimeout = timeout - 10;
+  acknowledgeTimeout = parseInt(config.acknowledgeTimeout) || 60;
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
@@ -207,6 +209,24 @@ var statusPoller = {
             logger.debug('[%s] Launched', getTestBrowserInfo(worker.string, worker.test_path));
             worker.launched = true;
             workerData.marked = true;
+            
+            worker.acknowledgeTimeout = setTimeout(function(){
+              // worker has not acknowledged itself in 60 sec, reopen url
+              if (worker.acknowledged) {
+                return;
+              }
+              var url = 'http://localhost:' + 8888 + '/' + worker.test_path;
+              if (url.indexOf('?') > 0) {
+                url += '&';
+              } else {
+                url += '?';
+              }
+              url += '_worker_key=' + worker._worker_key + '&_browser_string=' + getTestBrowserInfo(worker) ;
+              client.changeUrl(worker.id, {url: url}, function() {
+                logger.debug("[%s] Sent Request to reload url", getTestBrowserInfo(worker.string, worker.test_path));
+              });
+              
+            }, acknowledgeTimeout*1000);
 
             worker.activityTimeout = setTimeout(function () {
               if (!worker.acknowledged) {
