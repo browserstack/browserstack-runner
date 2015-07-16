@@ -20,6 +20,7 @@ var Log = require('../lib/logger'),
     logger = new Log(global.logLevel),
     BrowserStack = require('browserstack'),
     fs = require('fs'),
+    qs = require('querystring'),
     chalk = require('chalk'),
     config = require('../lib/config'),
     utils = require('../lib/utils'),
@@ -32,6 +33,7 @@ var Log = require('../lib/logger'),
     server,
     timeout,
     activityTimeout,
+    ackTimeout,
     workers = {},
     workerKeys = {},
     tunnelingAgent,
@@ -43,6 +45,7 @@ function terminateAllWorkers(callback) {
       var worker = workers[key];
       if(worker) {
         logger.debug('[%s] Terminated', worker.string);
+        clearTimeout(worker.ackTimeout);
         clearTimeout(worker.activityTimeout);
         clearTimeout(worker.testActivityTimeout);
         delete workers[key];
@@ -109,8 +112,23 @@ function getTestBrowserInfo(browserString, path) {
   if (config.multipleTest) {
     info += ', ' + path;
   }
+
   return info;
 }
+
+
+function buildTestUrl(test_path, worker_key, browser_string) {
+  var url = 'http://localhost:' + serverPort + '/' + test_path;
+
+  var querystring = qs.stringify({
+    _worker_key: worker_key,
+    _browser_string: browser_string
+  });
+
+  url += ((url.indexOf('?') > 0) ? '&' : '?') + querystring;
+  return url;
+}
+
 
 function launchServer() {
   logger.debug('Launching server on port:', serverPort);
@@ -120,20 +138,12 @@ function launchServer() {
 }
 
 function launchBrowser(browser, path) {
-  var url = 'http://localhost:' + serverPort.toString() + '/' + path.replace(/\\/g, '/');
-  var browserString = utils.browserString(browser);
-  logger.debug('[%s] Launching', getTestBrowserInfo(browserString, path));
-
   var key = utils.uuid();
+  var browserString = utils.browserString(browser);
+  var browserInfo = getTestBrowserInfo(browserString, path);
+  logger.debug('[%s] Launching', browserInfo);
 
-  if (url.indexOf('?') > 0) {
-    url += '&';
-  } else {
-    url += '?';
-  }
-
-  url += '_worker_key=' + key + '&_browser_string=' + browserString;
-  browser['url'] = url;
+  browser.url = buildTestUrl(path.replace(/\\/g, '/'), key, browserString);
 
   if (config.project) {
     browser.project = config.project;
@@ -153,6 +163,7 @@ function launchBrowser(browser, path) {
     timeout = 300;
   }
   activityTimeout = timeout - 10;
+  ackTimeout = parseInt(config.ackTimeout) || 60;
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
@@ -169,10 +180,13 @@ function launchBrowser(browser, path) {
     worker.string = browserString;
     worker.test_path = path;
     worker.path_index = 0;
+
+    // attach helper methods to manage worker state
+    attachWorkerHelpers(worker);
+
     workers[key] = worker;
     workerKeys[worker.id] = {key: key, marked: false};
   });
-
 }
 
 function launchBrowsers(config, browser) {
@@ -186,6 +200,63 @@ function launchBrowsers(config, browser) {
     }
   }, 100);
 }
+
+
+function attachWorkerHelpers(worker) {
+  // TODO: Consider creating instances of a proper 'Worker' class
+
+  worker.buildUrl = function buildUrl(test_path) {
+    return buildTestUrl(test_path || this.test_path, this._worker_key, this.getTestBrowserInfo());
+  };
+
+  worker.getTestBrowserInfo = function getTestBrowserInfo(test_path) {
+    var info = this.string;
+    if (config.multipleTest) {
+      info += ', ' + (test_path || this.test_path);
+    }
+    return info;
+  };
+
+  worker.awaitAck = function awaitAck() {
+    var self = this;
+
+    if (this.ackTimeout) {
+      // Already awaiting ack, or awaited ack once and failed
+      return;
+    }
+
+    this.ackTimeout = setTimeout(function () {
+      if (self.isAckd) {
+        // Already ack'd
+        return;
+      }
+
+      // worker has not acknowledged itself in 60 sec, reopen url
+      client.changeUrl(self.id, { url: self.buildUrl() }, function () {
+        logger.debug("[%s] Sent Request to reload url", self.getTestBrowserInfo());
+      });
+
+    }, ackTimeout * 1000);
+
+    logger.debug('[%s] Awaiting ack', this.getTestBrowserInfo());
+  };
+
+  worker.markAckd = function markAckd() {
+    this.resetAck();
+    this.isAckd = true;
+
+    logger.debug('[%s] Received ack', this.getTestBrowserInfo());
+  };
+
+  worker.resetAck = function resetAck() {
+    clearTimeout(this.ackTimeout);
+    this.ackTimeout = null;
+    this.isAckd = false;
+  };
+
+  return worker;
+}
+
 
 var statusPoller = {
   poller: null,
@@ -208,9 +279,12 @@ var statusPoller = {
 
           if (_worker.status === 'running') {
             //clearInterval(statusPoller);
-            logger.debug('[%s] Launched', getTestBrowserInfo(worker.string, worker.test_path));
+            logger.debug('[%s] Launched', worker.getTestBrowserInfo());
             worker.launched = true;
             workerData.marked = true;
+
+            // Await ack from browser-worker
+            worker.awaitAck();
 
             worker.activityTimeout = setTimeout(function () {
               if (!worker.acknowledged) {
