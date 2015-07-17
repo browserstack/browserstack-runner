@@ -193,6 +193,10 @@ var statusPoller = {
   start: function() {
     statusPoller.poller = setInterval(function () {
       client.getWorkers(function (err, _workers) {
+        if (!_workers) {
+          logger.info(chalk.red('Error found: ' + err));
+          return;
+        }
         _workers.filter(function(currentValue) {
           return currentValue.status === 'running' && workerKeys[currentValue.id] && !workerKeys[currentValue.id].marked;
         }).forEach(function(_worker) {
