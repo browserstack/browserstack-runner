@@ -68,6 +68,40 @@ A sample configuration file:
 }
 ```
 
+#### `browsers` parameter
+
+`browsers` parameter is a list of objects, where each object contains the details of the browsers on which you want to run your tests. This object differs for browsers on dekstop platforms and browsers on mobile platforms. Browsers on dekstop platoform should contain `browser`, `browser_version`, `os	`, `os_version` parameters set as required and `device` parameter is set to `null`.
+
+Example:
+```json
+{
+	  "browser": "ie",
+      "browser_version": "10.0",
+      "device": null,
+      "os": "Windows",
+      "os_version": "8"
+}
+```
+
+For mobile platforms, `os`, `os_version` and `device` parameters are required.
+
+Example:
+```json
+[{
+	"os": "ios",
+	"os_version": "8.3",
+	"device_name": "iPhone 6 Plus"	
+},
+{
+	"os": "android",
+	"os_version": "4.0",
+	"device_name": "Google Nexus"
+}
+]
+```
+
+For information regarding list of supported browsers, platforms and other details visit this [link](http://www.browserstack.com/list-of-browsers-and-platforms?product=live).
+
 #### Compact `browsers` configuration
 
 When `os` and `os_version` granularity is not desired, following configuration can be used:
@@ -99,6 +133,9 @@ Example:
   ]
 }
 ```
+
+**Note:**
+These shortcuts work only for browsers on desktop platforms supported by Browserstack.
 
 ### Proxy support for BrowserStack local
 
