@@ -206,7 +206,8 @@ function attachWorkerHelpers(worker) {
   // TODO: Consider creating instances of a proper 'Worker' class
 
   worker.buildUrl = function buildUrl(test_path) {
-    return buildTestUrl(test_path || this.test_path, this._worker_key, this.getTestBrowserInfo());
+    var workerKey = workerKeys[this.id] ? workerKeys[this.id].key : null;
+    return buildTestUrl(test_path || this.test_path, workerKey, this.getTestBrowserInfo());
   };
 
   worker.getTestBrowserInfo = function getTestBrowserInfo(test_path) {
@@ -287,7 +288,7 @@ var statusPoller = {
             worker.awaitAck();
 
             worker.activityTimeout = setTimeout(function () {
-              if (!worker.acknowledged) {
+              if (!worker.isAckd) {
                 var subject = 'Worker inactive for too long: ' + worker.string;
                 var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 utils.alertBrowserStack(subject, content, null, function(){});
@@ -308,7 +309,7 @@ var statusPoller = {
             }, activityTimeout * 1000);
 
             worker.testActivityTimeout = setTimeout(function () {
-              if (worker.acknowledged) {
+              if (worker.isAckd) {
                 var subject = 'Tests timed out on: ' + worker.string;
                 var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 utils.alertBrowserStack(subject, content, null, function(){});
