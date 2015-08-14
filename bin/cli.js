@@ -233,7 +233,7 @@ function attachWorkerHelpers(worker) {
 
       // worker has not acknowledged itself in 60 sec, reopen url
       client.changeUrl(self.id, { url: self.buildUrl() }, function () {
-        logger.debug("[%s] Sent Request to reload url", self.getTestBrowserInfo());
+        logger.debug('[%s] Sent Request to reload url', self.getTestBrowserInfo());
       });
 
     }, ackTimeout * 1000);
