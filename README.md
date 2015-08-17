@@ -90,17 +90,17 @@ Example:
 [{
 	"os": "ios",
 	"os_version": "8.3",
-	"device_name": "iPhone 6 Plus"	
+	"device": "iPhone 6 Plus"
 },
 {
 	"os": "android",
 	"os_version": "4.0",
-	"device_name": "Google Nexus"
+	"device": "Google Nexus"
 }
 ]
 ```
 
-For information regarding list of supported browsers, platforms and other details visit this [link](http://www.browserstack.com/list-of-browsers-and-platforms?product=live).
+For a full list of supported browsers, platforms and other details, [visit the BrowserStack site](https://www.browserstack.com/list-of-browsers-and-platforms?product=automate).
 
 #### Compact `browsers` configuration
 
@@ -133,9 +133,8 @@ Example:
   ]
 }
 ```
-
 **Note:**
-These shortcuts work only for browsers on desktop platforms supported by Browserstack.
+These shortcuts work only for browsers on desktop platforms supported by BrowserStack.
 
 ### Proxy support for BrowserStack local
 
