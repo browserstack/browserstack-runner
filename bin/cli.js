@@ -33,7 +33,7 @@ var Log = require('../lib/logger'),
     server,
     timeout,
     activityTimeout,
-    ackTimeout,
+    testActivityTimeout,
     workers = {},
     workerKeys = {},
     tunnelingAgent,
@@ -45,7 +45,6 @@ function terminateAllWorkers(callback) {
       var worker = workers[key];
       if(worker) {
         logger.debug('[%s] Terminated', worker.string);
-        clearTimeout(worker.ackTimeout);
         clearTimeout(worker.activityTimeout);
         clearTimeout(worker.testActivityTimeout);
         delete workers[key];
@@ -163,7 +162,7 @@ function launchBrowser(browser, path) {
     timeout = 300;
   }
   activityTimeout = timeout - 10;
-  ackTimeout = parseInt(config.ackTimeout) || 60;
+  testActivityTimeout = timeout - 30;
 
   client.createWorker(browser, function (err, worker) {
     if (err || typeof worker !== 'object') {
@@ -218,42 +217,17 @@ function attachWorkerHelpers(worker) {
     return info;
   };
 
-  worker.awaitAck = function awaitAck() {
-    var self = this;
-
-    if (this.ackTimeout) {
-      // Already awaiting ack, or awaited ack once and failed
-      return;
-    }
-
-    this.ackTimeout = setTimeout(function () {
-      if (self.isAckd) {
-        // Already ack'd
-        return;
-      }
-
-      // worker has not acknowledged itself in 60 sec, reopen url
-      client.changeUrl(self.id, { url: self.buildUrl() }, function () {
-        logger.debug('[%s] Sent Request to reload url', self.getTestBrowserInfo());
-      });
-
-    }, ackTimeout * 1000);
-
-    logger.debug('[%s] Awaiting ack', this.getTestBrowserInfo());
-  };
-
   worker.markAckd = function markAckd() {
-    this.resetAck();
     this.isAckd = true;
 
     logger.debug('[%s] Received ack', this.getTestBrowserInfo());
   };
 
   worker.resetAck = function resetAck() {
-    clearTimeout(this.ackTimeout);
-    this.ackTimeout = null;
     this.isAckd = false;
   };
+
+  worker.reloaded = false;
 
   return worker;
 }
@@ -284,10 +258,7 @@ var statusPoller = {
             worker.launched = true;
             workerData.marked = true;
 
-            // Await ack from browser-worker
-            worker.awaitAck();
-
-            worker.activityTimeout = setTimeout(function () {
+            var activityTimeoutCheck = function() {
               if (!worker.isAckd) {
                 var subject = 'Worker inactive for too long: ' + worker.string;
                 var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
@@ -306,10 +277,12 @@ var statusPoller = {
                   process.exit('SIGTERM');
                 }
               }
-            }, activityTimeout * 1000);
+            };
 
-            worker.testActivityTimeout = setTimeout(function () {
-              if (worker.isAckd) {
+            worker.activityTimeout = setTimeout(activityTimeoutCheck, activityTimeout * 1000);
+
+            var testActivityTimeoutCheck = function() {
+              if (worker.isAckd && worker.reloaded) {
                 var subject = 'Tests timed out on: ' + worker.string;
                 var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 utils.alertBrowserStack(subject, content, null, function(){});
@@ -326,8 +299,21 @@ var statusPoller = {
 
                   process.exit('SIGTERM');
                 }
+              } else {
+                clearTimeout(worker.activityTimeout);
+
+                // the test is not completed, may have failed to load page, try to reload again
+                client.changeUrl(worker.id, { url: worker.config.url }, function () {
+                  worker.reloaded = true; 
+                  logger.debug("[%s] Sent Request to reload url", worker.getTestBrowserInfo());
+
+                  worker.activityTimeout = setTimeout(activityTimeoutCheck, activityTimeout * 1000);
+                  worker.testActivityTimeout = setTimeout(testActivityTimeoutCheck, testActivityTimeout * 1000);
+                });
               }
-            }, (activityTimeout * 1000));
+            };
+
+            worker.testActivityTimeout = setTimeout(testActivityTimeoutCheck, testActivityTimeout * 1000);
           }
         });
       });
