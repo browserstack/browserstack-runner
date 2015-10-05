@@ -129,3 +129,9 @@ To avoid duplication of system or user specific information across several confi
 To avoid checking in the BrowserStack `username` and `key` in your source control system, the corresponding environment variables can be used.
 
 These can also be provided by a build server, for example [using secure environment variables on Travis CI](http://about.travis-ci.org/docs/user/build-configuration/#Secure-environment-variables).
+
+
+### Code Sample
+
+Check out code sample [here].
+[here]:https://github.com/browserstack/browserstack-runner-sample
