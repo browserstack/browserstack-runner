@@ -70,14 +70,13 @@ A sample configuration file:
 
 #### `browsers` parameter
 
-`browsers` parameter is a list of objects, where each object contains the details of the browsers on which you want to run your tests. This object differs for browsers on dekstop platforms and browsers on mobile platforms. Browsers on dekstop platoform should contain `browser`, `browser_version`, `os	`, `os_version` parameters set as required and `device` parameter is set to `null`.
+`browsers` parameter is a list of objects, where each object contains the details of the browsers on which you want to run your tests. This object differs for browsers on desktop platforms and browsers on mobile platforms. Browsers on desktop platform should contain `browser`, `browser_version`, `os	`, `os_version` parameters set as required.
 
 Example:
 ```json
 {
 	  "browser": "ie",
       "browser_version": "10.0",
-      "device": null,
       "os": "Windows",
       "os_version": "8"
 }
