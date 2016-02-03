@@ -106,7 +106,7 @@ For a full list of supported browsers, platforms and other details, [visit the B
 When `os` and `os_version` granularity is not desired, following configuration can be used:
  * `[browser]_current` or *browser*_latest: will assign the latest version of the *browser*.
  * `[browser]_previous`: will assign the previous version of the *browser*.
- * `[browser]_[version]`: will assign the *version* specificed of the *browser*. Minor versions can be concatinated with underscores.
+ * `[browser]_[version]`: will assign the *version* specified of the *browser*. Minor versions can be concatenated with underscores.
 
 This can also be mixed with fine-grained configuration.
 
