@@ -73,7 +73,9 @@ function runRepository(testHome, runnerPath, repository, config, callback) {
     conf.test_framework = repository.test_framework;
     conf.browsers = repository.browsers;
     conf.project = repository.name;
-    conf.build = repository.branch;
+
+    var ciPrefix = process.env.TRAVIS_BUILD_NUMBER;
+    conf.build = (ciPrefix ? ciPrefix + '-' : '') + repository.branch;
     conf.test_path = repository.test_path;
 
     runTests(runnerPath, process.cwd(), conf, repository.expected_results, done);
