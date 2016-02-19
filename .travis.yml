@@ -1,0 +1,16 @@
+language: node_js
+
+node_js:
+  - 'stable'
+
+before_install:
+  - npm install -g grunt-cli jshint gulp
+  - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJTVEFDS19VU0VSTkFNRT1icm93c2Vyc3RhY2tydW5uMQo=`
+  - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJTVEFDS19LRVk9NW5qc0d5emdqNkpWMmh3eUh1dHEK`
+
+script:
+  - npm run-script test-ci
+
+cache:
+  directories:
+    - node_modules
