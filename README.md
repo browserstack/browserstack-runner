@@ -75,7 +75,7 @@ A sample configuration file:
 Example:
 ```json
 {
-	  "browser": "ie",
+      "browser": "ie",
       "browser_version": "10.0",
       "os": "Windows",
       "os_version": "8"
