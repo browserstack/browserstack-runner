@@ -36,7 +36,7 @@ var repositories = [
       failed: 0
     }
   },
-  {
+  /*{
     name: 'mocha',
     tag: 'v2.4.5',
     url: 'https://github.com/mochajs/mocha.git',
@@ -59,7 +59,7 @@ var repositories = [
       passed: 80,
       failed: 9
     }
-  },
+  },*/
   {
     name: 'spine',
     tag: 'v.1.6.2',
