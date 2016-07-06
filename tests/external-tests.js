@@ -114,29 +114,6 @@ var repositories = [
 
 var repositoriesOptional = [
   {
-    name: 'qunit',
-    tag: 'v1.0.0',
-    url: 'https://github.com/jquery/qunit.git',
-    test_framework: 'qunit',
-    browsers: [
-      {
-        'browser': 'firefox',
-        'browser_version': '44.0',
-        'os': 'OS X',
-        'os_version': 'Snow Leopard'
-      }
-    ],
-    test_path: [
-      'test/index.html',
-      'test/logs.html'
-    ],
-    expected_results: {
-      tests: 323,
-      passed: 323,
-      failed: 0
-    }
-  },
-  {
     name: 'mocha',
     tag: '1.21.5',
     url: 'https://github.com/mochajs/mocha.git',
