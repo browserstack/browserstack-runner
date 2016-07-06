@@ -132,9 +132,9 @@ var repositoriesOptional = [
       'test/browser/opts.html'
     ],
     expected_results: {
-      tests: 84,
+      tests: 83,
       passed: 77,
-      failed: 7
+      failed: 6
     }
   }
 ];
