@@ -31,8 +31,8 @@ var repositories = [
       'test/index.html'
     ],
     expected_results: {
-      tests: 534,
-      passed: 534,
+      tests: 133,
+      passed: 130,
       failed: 0
     }
   },
