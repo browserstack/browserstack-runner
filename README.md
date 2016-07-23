@@ -34,7 +34,7 @@ To run browser tests on BrowserStack infrastructure, you need to create a `brows
  * `test_path`: Path to the test page which will run the tests when opened in a browser.
  * `test_framework`: Specify test framework which will run the tests. Currently supporting qunit, jasmine, jasmine2 and mocha.
  * `timeout`: Specify worker timeout with BrowserStack.
- * `browsers`: A list of browsers on which tests are to be run. Find a [list of all supported browsers and platforms on browerstack.com](http://www.browserstack.com/list-of-browsers-and-platforms?product=live).
+ * `browsers`: A list of browsers on which tests are to be run. Find a [list of all supported browsers and platforms on browerstack.com](https://www.browserstack.com/list-of-browsers-and-platforms?product=js_testing).
  * `build`: A string to identify your test run in Browserstack.  In `TRAVIS` setup `TRAVIS_COMMIT` will be the default identifier.
  * `proxy`: Specify a proxy to use for the local tunnel. Object with `host`, `port`, `username` and `password` properties.
 
@@ -99,7 +99,7 @@ Example:
 ]
 ```
 
-For a full list of supported browsers, platforms and other details, [visit the BrowserStack site](https://www.browserstack.com/list-of-browsers-and-platforms?product=automate).
+For a full list of supported browsers, platforms and other details, [visit the BrowserStack site](https://www.browserstack.com/list-of-browsers-and-platforms?product=js_testing).
 
 #### Compact `browsers` configuration
 
