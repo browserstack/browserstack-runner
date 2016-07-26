@@ -66,6 +66,12 @@ var repositories = [
         'browser_version': '44.0',
         'os': 'OS X',
         'os_version': 'El Capitan'
+      },
+      {
+        'browser': 'ie',
+        'browser_version': '8',
+        'os': 'Windows',
+        'os_version': '7'
       }
     ],
     test_path: [
@@ -84,10 +90,16 @@ var repositories = [
     test_framework: 'mocha',
     browsers: [
       {
+        'browser': 'chrome',
+        'browser_version': '49.0',
+        'os': 'OS X',
+        'os_version': 'El Capitan'
+      },
+      {
         'browser': 'ie',
-        'browser_version': '11.0',
+        'browser_version': '8',
         'os': 'Windows',
-        'os_version': '10'
+        'os_version': '7'
       }
     ],
     test_path: [
@@ -112,6 +124,12 @@ var repositories = [
         'browser_version': '9.0',
         'os': 'OS X',
         'os_version': 'El Capitan'
+      },
+      {
+        'browser': 'ie',
+        'browser_version': '8.0',
+        'os': 'Windows',
+        'os_version': '7'
       }
     ],
     test_path: [
@@ -134,6 +152,12 @@ var repositories = [
         'browser_version': '5.1',
         'os': 'OS X',
         'os_version': 'Snow Leopard'
+      },
+      {
+        'browser': 'ie',
+        'browser_version': '8',
+        'os': 'Windows',
+        'os_version': '7'
       }
     ],
     test_path: [
