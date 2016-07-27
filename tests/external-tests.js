@@ -62,6 +62,102 @@ var repositories = [
     test_framework: 'qunit',
     browsers: [
       {
+        'browser': 'ie',
+        'browser_version': '8',
+        'os': 'Windows',
+        'os_version': '7'
+      }
+    ],
+    test_path: [
+      'test/index.html'
+    ],
+    expected_results: {
+      tests: 510,
+      passed: 510,
+      failed: 0
+    }
+  },
+  {
+    name: 'mocha',
+    tag: 'v2.4.5',
+    url: 'https://github.com/mochajs/mocha.git',
+    test_framework: 'mocha',
+    browsers: [
+      {
+        'browser': 'ie',
+        'browser_version': '7',
+        'os': 'Windows',
+        'os_version': 'XP'
+      }
+    ],
+    test_path: [
+      'test/browser/index.html',
+      'test/browser/large.html',
+      'test/browser/opts.html'
+    ],
+    expected_results: {
+      tests: 89,
+      passed: 20,
+      failed: 69
+    }
+  },
+  {
+    name: 'spine',
+    tag: 'v.1.6.2',
+    url: 'https://github.com/spine/spine.git',
+    test_framework: 'jasmine2',
+    browsers: [
+      {
+        'browser': 'ie',
+        'browser_version': '8',
+        'os': 'Windows',
+        'os_version': 'XP'
+      }
+    ],
+    test_path: [
+      'test/index.html'
+    ],
+    expected_results: {
+      tests: 161,
+      passed: 108,
+      failed: 53
+    }
+  },
+  {
+    name: 'spine',
+    tag: 'v1.0.0',
+    url: 'https://github.com/spine/spine.git',
+    test_framework: 'jasmine',
+    browsers: [
+      {
+        'browser': 'ie',
+        'browser_version': '8',
+        'os': 'Windows',
+        'os_version': '7'
+      }
+    ],
+    test_path: [
+      'test/index.html'
+    ],
+    patches: [
+      {
+        find: 'jasmine.getEnv().execute();',
+        replace: 'window.onload = function () { jasmine.getEnv().execute(); };'
+      }
+    ],
+    expected_results: {
+      tests: 63,
+      passed: 59,
+      failed: 4
+    }
+  },
+  {
+    name: 'qunit',
+    tag: '1.21.0',
+    url: 'https://github.com/jquery/qunit.git',
+    test_framework: 'qunit',
+    browsers: [
+      {
         'browser': 'firefox',
         'browser_version': '44.0',
         'os': 'OS X',
