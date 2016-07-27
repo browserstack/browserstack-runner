@@ -131,9 +131,9 @@ var repositories = [
     browsers: [
       {
         'browser': 'ie',
-        'browser_version': '8',
+        'browser_version': '6',
         'os': 'Windows',
-        'os_version': '7'
+        'os_version': 'XP'
       }
     ],
     test_path: [
@@ -146,9 +146,9 @@ var repositories = [
       }
     ],
     expected_results: {
-      tests: 63,
-      passed: 59,
-      failed: 4
+      tests: 58,
+      passed: 53,
+      failed: 5
     }
   },
   {
