@@ -299,8 +299,6 @@ var statusPoller = {
               if (!worker.isAckd) {
                 logger.trace('[%s] worker.activityTimeout', worker.id);
 
-                var subject = 'Worker inactive for too long: ' + worker.string;
-                var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 delete workers[workerData.key];
                 delete workerKeys[worker.id];
                 config.status += 1;
@@ -327,8 +325,6 @@ var statusPoller = {
               if (worker.isAckd) {
                 logger.trace('[%s] worker.testActivityTimeout', worker.id);
 
-                var subject = 'Tests timed out on: ' + worker.string;
-                var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
                 delete workers[workerData.key];
                 delete workerKeys[worker.id];
                 config.status += 1;
@@ -422,5 +418,5 @@ exports.test = function(config_file, callback) {
   } catch (e) {
     callback(e);
   }
-}
+};
 exports.cleanUpAndExit = cleanUpAndExit;
