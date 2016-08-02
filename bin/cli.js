@@ -24,6 +24,3 @@ runner.test(process.env.BROWSERSTACK_JSON || 'browserstack.json', function(err) 
     console.log('Invalid Command');
   }
 });
-process.on('exit', function(signal) {
-  runner.cleanUpAndExit(signal);
-});

@@ -1,7 +1,6 @@
 var Log = require('../lib/logger'),
     logger = new Log(global.logLevel),
     BrowserStack = require('browserstack'),
-    fs = require('fs'),
     qs = require('querystring'),
     chalk = require('chalk'),
     utils = require('../lib/utils'),
@@ -17,11 +16,9 @@ var Log = require('../lib/logger'),
     activityTimeout,
     ackTimeout,
     client,
-    pid_file = process.cwd() + '/browserstack-run.pid',
     workers = {},
     workerKeys = {},
-    tunnelingAgent,
-    tunnel;
+    tunnelingAgent;
 
 function terminateAllWorkers(callback) {
   logger.trace('terminateAllWorkers');
@@ -65,7 +62,8 @@ function terminateAllWorkers(callback) {
   }
 }
 
-function cleanUpAndExit(signal) {
+function cleanUpAndExit(signal, callback) {
+  callback = callback || function() {};
   logger.trace('cleanUpAndExit: signal: %s', signal);
 
   try {
@@ -79,23 +77,18 @@ function cleanUpAndExit(signal) {
   }
 
   try {
-    process.kill(tunnel.process.pid, 'SIGKILL');
+    process.kill(tunnel.process.pid, 'SIGTERM');
   } catch (e) {
     logger.debug('Non existent tunnel');
-  }
-  try {
-    fs.unlinkSync(pid_file);
-  } catch (e) {
-    logger.debug('Non existent pid file.');
   }
 
   if (signal === 'SIGTERM') {
     logger.debug('Exiting');
-    process.exit(config.status);
+    callback(null, config.status);
   } else {
     terminateAllWorkers(function() {
       logger.debug('Exiting');
-      process.exit(1);
+      callback(null, 1);
     });
   }
 }
@@ -123,11 +116,11 @@ function buildTestUrl(test_path, worker_key, browser_string) {
   return url;
 }
 
-function launchServer(config) {
+function launchServer(config, callback) {
   logger.trace('launchServer:', serverPort);
   logger.debug('Launching server on port:', serverPort);
 
-  server = new Server(client, workers, config);
+  server = new Server(client, workers, config, callback);
   server.listen(parseInt(serverPort, 10));
 }
 
@@ -265,7 +258,7 @@ function attachWorkerHelpers(worker) {
 var statusPoller = {
   poller: null,
 
-  start: function() {
+  start: function(callback) {
     logger.trace('statusPoller.start');
 
     statusPoller.poller = setInterval(function () {
@@ -311,7 +304,7 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.activityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  process.exit('SIGTERM');
+                  callback(null, 'All Tests Done');
                 }
               } else {
                 logger.trace('[%s] worker.activityTimeout: already ackd', worker.id);
@@ -337,7 +330,7 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.testActivityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  process.exit('SIGTERM');
+                  callback(null, 'All Tests Done');
                 }
               } else {
                 logger.trace('[%s] worker.testActivityTimeout: not ackd', worker.id);
@@ -355,7 +348,7 @@ var statusPoller = {
   }
 };
 
-function runTests(config) {
+function runTests(config, callback) {
   if (config.proxy) {
     logger.trace('runTests: with proxy', config.proxy);
 
@@ -363,20 +356,20 @@ function runTests(config) {
       proxy: config.proxy
     });
     var oldhttpreq = http.request;
-    http.request = function (options, callback) {
+    http.request = function (options, reqCallback) {
       options.agent = tunnelingAgent;
-      return oldhttpreq.call(null, options, callback);
+      return oldhttpreq.call(null, options, reqCallback);
     };
   }
   if (config.browsers && config.browsers.length > 0) {
     ConfigParser.parse(client, config.browsers, function(browsers){
-      launchServer(config);
+      launchServer(config, callback);
 
       logger.trace('runTests: creating tunnel');
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function () {
         logger.trace('runTests: created tunnel');
 
-        statusPoller.start();
+        statusPoller.start(callback);
         var total_runs = config.browsers.length * (Array.isArray(config.test_path) ? config.test_path.length : 1);
         logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
         browsers.forEach(function(browser) {
@@ -399,7 +392,7 @@ function runTests(config) {
       });
     });
   } else {
-    launchServer(config);
+    launchServer(config, callback);
   }
 }
 
@@ -413,10 +406,14 @@ exports.test = function(config_file, callback) {
       username: config.username,
       password: config.key
     });
-    runTests(config);
-    fs.writeFileSync(pid_file, process.pid, 'utf-8');
+    runTests(config, function(error) {
+      if(error) {
+        callback(error);
+      } else {
+        cleanUpAndExit('SIGTERM', callback);
+      }
+    });
   } catch (e) {
     callback(e);
   }
 };
-exports.cleanUpAndExit = cleanUpAndExit;
