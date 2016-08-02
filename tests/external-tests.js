@@ -9,7 +9,7 @@ var browserstackConfig = {
 };
 
 var mode = (process.env.TEST_MODE || 'all').toLowerCase();
-var runnerPath = path.resolve(path.join(__dirname, '..', 'bin', 'cli.js'));
+var runnerPath = path.resolve(path.join(__dirname, '..', 'bin', 'runner.js'));
 var testHome = path.resolve(__dirname);
 process.chdir(testHome);
 

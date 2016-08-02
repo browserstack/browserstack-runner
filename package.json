@@ -26,9 +26,9 @@
     }
   ],
   "bin": {
-    "browserstack-runner": "bin/cli.js"
+    "browserstack-runner": "bin/runner.js"
   },
-  "main": "bin/runner.js",
+  "main": "bin/cli.js",
   "scripts": {
     "lint": "node_modules/.bin/jshint lib/*.js bin/ tests/*.js",
     "test-unit": "node_modules/.bin/mocha tests/unit",
