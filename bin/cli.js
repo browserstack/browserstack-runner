@@ -62,7 +62,8 @@ function terminateAllWorkers(callback) {
   }
 }
 
-function cleanUpAndExit(signal, report, callback) {
+function cleanUpAndExit(signal, error, report, callback) {
+  ConfigParser.finalBrowsers = [];
   callback = callback || function() {};
   report = report || {};
   logger.trace('cleanUpAndExit: signal: %s', signal);
@@ -85,11 +86,11 @@ function cleanUpAndExit(signal, report, callback) {
 
   if (signal === 'SIGTERM') {
     logger.debug('Exiting');
-    callback(null, report);
+    callback(error, report);
   } else {
     terminateAllWorkers(function() {
       logger.debug('Exiting');
-      callback(null, report);
+      callback(error, report);
     });
   }
 }
@@ -350,6 +351,10 @@ var statusPoller = {
 };
 
 function runTests(config, callback) {
+  var runTestsCallback = function(error, report) {
+    ConfigParser.finalBrowsers = [];
+    callback(error, report);
+  };
   if (config.proxy) {
     logger.trace('runTests: with proxy', config.proxy);
 
@@ -364,32 +369,36 @@ function runTests(config, callback) {
   }
   if (config.browsers && config.browsers.length > 0) {
     ConfigParser.parse(client, config.browsers, function(browsers){
-      launchServer(config, callback);
+      launchServer(config, runTestsCallback);
 
       logger.trace('runTests: creating tunnel');
-      tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function () {
-        logger.trace('runTests: created tunnel');
+      tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function (err) {
+        if(err) {
+          cleanUpAndExit(null, err, '{}', callback);
+        } else {
+          logger.trace('runTests: created tunnel');
 
-        statusPoller.start(callback);
-        var total_runs = config.browsers.length * (Array.isArray(config.test_path) ? config.test_path.length : 1);
-        logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
-        browsers.forEach(function(browser) {
-          if (browser.browser_version === 'latest') {
-            logger.debug('[%s] Finding version.', utils.browserString(browser));
-            logger.trace('runTests: client.getLatest');
+          statusPoller.start(runTestsCallback);
+          var total_runs = config.browsers.length * (Array.isArray(config.test_path) ? config.test_path.length : 1);
+          logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
+          browsers.forEach(function(browser) {
+            if (browser.browser_version === 'latest') {
+              logger.debug('[%s] Finding version.', utils.browserString(browser));
+              logger.trace('runTests: client.getLatest');
 
-            client.getLatest(browser, function(err, version) {
-              logger.trace('runTests: client.getLatest | response:', version, err);
-              logger.debug('[%s] Version is %s.',
-                           utils.browserString(browser), version);
-                           browser.browser_version = version;
-                           // So that all latest logs come in together
-                           launchBrowsers(config, browser);
-            });
-          } else {
-            launchBrowsers(config, browser);
-          }
-        });
+              client.getLatest(browser, function(err, version) {
+                logger.trace('runTests: client.getLatest | response:', version, err);
+                logger.debug('[%s] Version is %s.',
+                             utils.browserString(browser), version);
+                             browser.browser_version = version;
+                             // So that all latest logs come in together
+                             launchBrowsers(config, browser);
+              });
+            } else {
+              launchBrowsers(config, browser);
+            }
+          });
+        }
       });
     });
   } else {
@@ -408,11 +417,7 @@ exports.run = function(user_config, callback) {
       password: config.key
     });
     runTests(config, function(error, report) {
-      if(error) {
-        callback(error);
-      } else {
-        cleanUpAndExit('SIGTERM', report, callback);
-      }
+      cleanUpAndExit('SIGTERM', error, report, callback);
     });
   } catch (e) {
     callback(e);
