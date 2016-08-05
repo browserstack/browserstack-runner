@@ -1,5 +1,5 @@
 var Log = require('../lib/logger'),
-    logger = new Log(global.logLevel),
+    logger = new Log(global.logLevel || 'info'),
     BrowserStack = require('browserstack'),
     qs = require('querystring'),
     chalk = require('chalk'),
@@ -62,8 +62,9 @@ function terminateAllWorkers(callback) {
   }
 }
 
-function cleanUpAndExit(signal, callback) {
+function cleanUpAndExit(signal, report, callback) {
   callback = callback || function() {};
+  report = report || {};
   logger.trace('cleanUpAndExit: signal: %s', signal);
 
   try {
@@ -84,11 +85,11 @@ function cleanUpAndExit(signal, callback) {
 
   if (signal === 'SIGTERM') {
     logger.debug('Exiting');
-    callback(null, config.status);
+    callback(null, report);
   } else {
     terminateAllWorkers(function() {
       logger.debug('Exiting');
-      callback(null, 1);
+      callback(null, report);
     });
   }
 }
@@ -396,21 +397,21 @@ function runTests(config, callback) {
   }
 }
 
-exports.test = function(config_file, callback) {
+exports.run = function(user_config, callback) {
   callback = callback || function() {};
 
   try {
-    config = new (require('../lib/config').config)(config_file);
+    config = new (require('../lib/config').config)(user_config);
 
     client = BrowserStack.createClient({
       username: config.username,
       password: config.key
     });
-    runTests(config, function(error) {
+    runTests(config, function(error, report) {
       if(error) {
         callback(error);
       } else {
-        cleanUpAndExit('SIGTERM', callback);
+        cleanUpAndExit('SIGTERM', report, callback);
       }
     });
   } catch (e) {
