@@ -122,7 +122,6 @@ describe('Pass/Fail reporting', function() {
       let config = getBaseConfig();
       browserstackRunner.run(config, function(err, report) {
         assert.equal(err, null);
-        console.log(report);
         var parsedReport = JSON.parse(report);
         // Only failed assertions are emitted
         assert.equal(parsedReport["Windows 7, Chrome 52.0"].assertions.length, 8);
@@ -132,7 +131,6 @@ describe('Pass/Fail reporting', function() {
     });
     it('report should have specific keys', function(done) {
       let config = getBaseConfig();
-      console.log(JSON.stringify(config));
       browserstackRunner.run(config, function(err, report) {
         assert.equal(err, null);
         var parsedReport = JSON.parse(report);
@@ -148,7 +146,6 @@ describe('Pass/Fail reporting', function() {
     });
     it('report should have message in assertions', function(done) {
       let config = getBaseConfig();
-      console.log(JSON.stringify(config));
       browserstackRunner.run(config, function(err, report) {
         assert.equal(err, null);
         var parsedReport = JSON.parse(report);
