@@ -306,7 +306,11 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.activityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  callback(null, 'All Tests Done');
+                  if(server && server.report) {
+                    callback(null, server.report);
+                  } else {
+                    callback(null, {});
+                  }
                 }
               } else {
                 logger.trace('[%s] worker.activityTimeout: already ackd', worker.id);
@@ -332,7 +336,11 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.testActivityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  callback(null, 'All Tests Done');
+                  if(server && server.report) {
+                    callback(null, server.report);
+                  } else {
+                    callback(null, {});
+                  }
                 }
               } else {
                 logger.trace('[%s] worker.testActivityTimeout: not ackd', worker.id);
@@ -374,7 +382,7 @@ function runTests(config, callback) {
       logger.trace('runTests: creating tunnel');
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function (err) {
         if(err) {
-          cleanUpAndExit(null, err, '{}', callback);
+          cleanUpAndExit(null, err, {}, callback);
         } else {
           logger.trace('runTests: created tunnel');
 

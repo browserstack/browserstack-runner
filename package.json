@@ -33,7 +33,7 @@
   "scripts": {
     "lint": "node_modules/.bin/jshint lib/*.js bin/ tests/*.js",
     "test-unit": "node_modules/.bin/mocha tests/unit",
-    "test-behaviour": "node_modules/.bin/mocha tests/behaviour",
+    "test-behaviour": "node_modules/.bin/mocha tests/behaviour -R spec",
     "test-ci": "npm run lint && npm run test-unit && npm run test-behaviour && TEST_MODE=all tests/external-tests.js",
     "test": "npm run lint && npm run test-unit && npm run test-behaviour && TEST_MODE=required tests/external-tests.js",
     "update-util": "webpack"

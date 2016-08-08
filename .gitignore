@@ -3,3 +3,7 @@ node_modules
 browserstack.json
 browserstack-runner.pid
 lib/BrowserStackLocal
+tests/jasmine
+tests/jasmine2
+tests/mocha
+tests/qunit
