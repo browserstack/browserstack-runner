@@ -21,6 +21,99 @@ If you're getting an error `EACCES open ... BrowserStackLocal`, configure npm to
 
 Where `[user]` is replaced with a local user with enough permissions.
 
+## Usage as a module
+
+`browserstack-runner` can also be used as a module. To run your tests, inside your project do -
+
+```node
+var browserstackRunner = require('browserstack-runner');
+
+global.logLevel = 'info';
+var config = require('./browserstack.json');
+
+browserstackRunner.run(config, function(error, report) {
+  if(error) {
+    console.log("Error:" + error);
+    return;
+  }
+  console.log(JSON.stringify(report, null, 2));
+  console.log("Test Finished");
+});
+```
+
+The callback to `browserstackRunner.run` is called with two params -
+1. `error`: This parameter is either `null` or an `Error` object (if test execution failed) with message as the reason of why executing the tests on `BrowserStack` failed.
+2. `report`: This is an object which can be used to keep track of the `failed assertions` and the total count of `passed/failed` tests specific to a browser instance.
+
+The structure of the `report` object is as follows -
+
+```json
+{
+  "OS X Lion, Firefox 44.0": {
+    "assertions": [
+    {
+      "actual": false,
+        "expected": true,
+        "message": "One is an odd number",
+        "source": "@http://localhost:8888/tests/test.js:4:1"
+    },
+    {
+      "actual": false,
+      "expected": true,
+      "message": "Zero is not odd number",
+      "source": "@http://localhost:8888/tests/test.js:6:3"
+    },
+    {
+      "actual": false,
+      "expected": true,
+      "message": "Three is an odd number",
+      "source": "@http://localhost:8888/tests/test.js:5:1"
+    }
+    ],
+      "tests": [
+      {
+        "runtime": 3,
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "url": "/sample.html"
+      }
+    ]
+  },
+    "OS X Mountain Lion, Chrome 49.0": {
+      "assertions": [
+      {
+        "actual": false,
+        "expected": true,
+        "message": "Three is an odd number",
+        "source": "    at Object.<anonymous> (http://localhost:8888/tests/test.js:5:10)"
+      },
+      {
+        "actual": false,
+        "expected": true,
+        "message": "One is an odd number",
+        "source": "    at Object.<anonymous> (http://localhost:8888/tests/test.js:4:10)"
+      },
+      {
+        "actual": false,
+        "expected": true,
+        "message": "Zero is not odd number",
+        "source": "    at Object.<anonymous> (http://localhost:8888/tests/test.js:6:10)"
+      }
+      ],
+        "tests": [
+        {
+          "runtime": 9,
+          "total": 1,
+          "passed": 0,
+          "failed": 1,
+          "url": "/sample.html"
+        }
+      ]
+    }
+}
+```
+
 ## Configuration
 
 To run browser tests on BrowserStack infrastructure, you need to create a `browserstack.json` file in project's root directory (the directory from which tests are run), by running this command:
