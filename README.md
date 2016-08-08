@@ -170,3 +170,27 @@ These can also be provided by a build server, for example [using secure environm
 
 Check out code sample [here].
 [here]:https://github.com/browserstack/browserstack-runner-sample
+
+### Tests
+
+Testing involves pulling sample repos with test cases and running tests against them.
+```
+git submodule update --init --recursive
+npm test
+```
+
+Sample `browserstack.json`:
+```
+{
+  "username": "BROWSERSTACK_USERNAME",
+  "key": "BROWSERSTACK_KEY",
+  "test_path": "tests/external-repos/<sample-repo-name-here>/test/test.html",
+  "debug": true,
+  "browsers": [
+     "chrome_latest",
+     "firefox_latest",
+     "ie_11",
+     ...
+  ]
+}
+```
