@@ -99,96 +99,120 @@ describe('Pass/Fail reporting', function() {
 
   it('report keys should have browser names', function(done) {
     var config = getBaseConfig();
-    browserstackRunner.run(config, function(err, report) {
+    browserstackRunner.run(config, function(err, reports) {
+      var shouldBePresentBrowsers = [ 'Windows 7, Chrome 52.0', 'Windows 7, Firefox 47.0' ];
       assert.equal(err, null);
-      assert.notEqual(report['Windows 7, Chrome 52.0'], null);
-      assert.notEqual(report['Windows 7, Firefox 47.0'], null);
+      reports.forEach(function(report) {
+        var numMatched = 0;
+        shouldBePresentBrowsers.forEach(function(browser) {
+          if(browser === report.browser) {
+            numMatched++;
+          }
+        });
+        if(numMatched != 1) {
+          done(new Error('Report didnt match the shouldBePresentBrowsers for browser: ' + report.browser + ' numMatched: ' + numMatched));
+        } else {
+          var removeIndex = shouldBePresentBrowsers.indexOf(report.browser);
+          shouldBePresentBrowsers = shouldBePresentBrowsers.slice(0, removeIndex).concat(shouldBePresentBrowsers.slice(removeIndex + 1));
+        }
+      });
+      if(shouldBePresentBrowsers.length != 0) {
+        done(new Error('Browsers not Present in Report: ' + JSON.stringify(shouldBePresentBrowsers)));
+      }
       done();
     });
   });
-  it('report keys should have assertions and tests', function(done) {
+  it('report keys should have suites and tests', function(done) {
     var config = getBaseConfig();
-    browserstackRunner.run(config, function(err, report) {
+    browserstackRunner.run(config, function(err, reports) {
       assert.equal(err, null);
-      assert.notEqual(report['Windows 7, Chrome 52.0'].assertions, null);
-      assert.notEqual(report['Windows 7, Chrome 52.0'].tests, null);
-      assert.notEqual(report['Windows 7, Firefox 47.0'].assertions, null);
-      assert.notEqual(report['Windows 7, Firefox 47.0'].tests, null);
+      reports.forEach(function(report) {
+        assert.notEqual(report.tests, null);
+        assert.notEqual(report.suites, null);
+      });
       done();
     });
   });
-  describe('Test Assertions', function() {
-    it('report should have proper number of assertions for tests', function(done) {
-      var config = getBaseConfig();
-      browserstackRunner.run(config, function(err, report) {
-        assert.equal(err, null);
-        // Only failed assertions are emitted
-        assert.equal(report['Windows 7, Chrome 52.0'].assertions.length, 8);
-        assert.equal(report['Windows 7, Firefox 47.0'].assertions.length, 8);
-        done();
-      });
-    });
-    it('report should have specific keys', function(done) {
-      var config = getBaseConfig();
-      browserstackRunner.run(config, function(err, report) {
-        assert.equal(err, null);
-        Object.keys(report).forEach(function(reportKey) {
-          report[reportKey].assertions.forEach(function(assertion) {
-            [ 'actual', 'expected', 'message', 'source' ].forEach(function(key) {
-              assert.notEqual(assertion[key], null);
-            });
-          });
-        });
-        done();
-      });
-    });
-    it('report should have message in assertions', function(done) {
-      var config = getBaseConfig();
-      browserstackRunner.run(config, function(err, report) {
-        assert.equal(err, null);
-        Object.keys(report).forEach(function(reportKey) {
-          report[reportKey].assertions.forEach(function(assertion) {
-            assert.notEqual(assertion['message'].match(/\d+ is .*an .* number/), null);
-          });
-        });
-        done();
-      });
-    });
-  });
-  describe('Test tests', function() {
+  describe('Test Tests', function() {
     it('report should have proper number of tests', function(done) {
       var config = getBaseConfig();
-      browserstackRunner.run(config, function(err, report) {
+      browserstackRunner.run(config, function(err, reports) {
         assert.equal(err, null);
-        assert.equal(report['Windows 7, Chrome 52.0'].tests.length, 1);
-        assert.equal(report['Windows 7, Firefox 47.0'].tests.length, 1);
+        reports.forEach(function(report) {
+          assert.equal(report.tests.length, 3);
+        });
         done();
       });
     });
-    it('report should have specific keys', function(done) {
+    it('Each test should have specific keys', function(done) {
       var config = getBaseConfig();
-      browserstackRunner.run(config, function(err, report) {
+      browserstackRunner.run(config, function(err, reports) {
         assert.equal(err, null);
-        Object.keys(report).forEach(function(reportKey) {
-          report[reportKey].tests.forEach(function(test) {
-            [ 'runtime', 'total', 'passed', 'failed', 'url' ].forEach(function(key) {
-              assert.notEqual(test[key], null);
+        reports.forEach(function(report) {
+          Object.keys(report.tests).forEach(function(reportKey) {
+            [ 'name', 'suiteName', 'status', 'runtime', 'errors' ].forEach(function(key) {
+              assert.notEqual(report.tests[reportKey][key], null);
+            });
+            report.tests[reportKey].assertions.forEach(function(assertion) {
+              [ 'passed', 'actual', 'expected', 'message' ].forEach(function(key) {
+                assert.notEqual(assertion[key], null);
+              });
             });
           });
         });
         done();
       });
     });
-    it('report should have message in assertions', function(done) {
+    it('Each test should have message in assertions', function(done) {
       var config = getBaseConfig();
-      browserstackRunner.run(config, function(err, report) {
+      browserstackRunner.run(config, function(err, reports) {
         assert.equal(err, null);
-        Object.keys(report).forEach(function(reportKey) {
-          report[reportKey].tests.forEach(function(test) {
-            assert.equal(test['total'], 3);
-            assert.equal(test['passed'], 1);
-            assert.equal(test['failed'], 2);
+        reports.forEach(function(report) {
+          Object.keys(report.tests).forEach(function(reportKey) {
+            report.tests[reportKey].assertions.forEach(function(assertion) {
+              assert.notEqual(assertion['message'].match(/\d+ is .*an .* number/), null);
+            });
           });
+        });
+        done();
+      });
+    });
+  });
+  describe('Test Suites', function() {
+    it('report should have Suite of tests', function(done) {
+      var config = getBaseConfig();
+      browserstackRunner.run(config, function(err, reports) {
+        assert.equal(err, null);
+        reports.forEach(function(report) {
+          assert.notEqual(report.suites, null);
+        });
+        done();
+      });
+    });
+    it('Each Suite should have specific keys', function(done) {
+      var config = getBaseConfig();
+      browserstackRunner.run(config, function(err, reports) {
+        assert.equal(err, null);
+        reports.forEach(function(report) {
+          [ 'childSuites', 'tests', 'runtime', 'status', 'testCounts' ].forEach(function(key) {
+            assert.notEqual(report.suites[key], null);
+          });
+          [ 'total', 'passed', 'failed', 'skipped' ].forEach(function(key) {
+            assert.notEqual(report.suites.testCounts[key], null);
+          });
+        });
+        done();
+      });
+    });
+    it('Suites should have correct passed/failed count', function(done) {
+      var config = getBaseConfig();
+      browserstackRunner.run(config, function(err, reports) {
+        assert.equal(err, null);
+        reports.forEach(function(report) {
+          assert.equal(report.suites.testCounts['total'], 3);
+          assert.equal(report.suites.testCounts['passed'], 1);
+          assert.equal(report.suites.testCounts['failed'], 2);
+          assert.equal(report.suites.testCounts['skipped'], 0);
         });
         done();
       });

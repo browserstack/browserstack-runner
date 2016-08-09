@@ -65,7 +65,7 @@ function terminateAllWorkers(callback) {
 function cleanUpAndExit(signal, error, report, callback) {
   ConfigParser.finalBrowsers = [];
   callback = callback || function() {};
-  report = report || {};
+  report = report || [];
   logger.trace('cleanUpAndExit: signal: %s', signal);
 
   try {
@@ -306,8 +306,8 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.activityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  if(server && server.report) {
-                    callback(null, server.report);
+                  if(server && server.reports) {
+                    callback(null, server.reports);
                   } else {
                     callback(null, {});
                   }
@@ -336,8 +336,8 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.testActivityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  if(server && server.report) {
-                    callback(null, server.report);
+                  if(server && server.reports) {
+                    callback(null, server.reports);
                   } else {
                     callback(null, {});
                   }
