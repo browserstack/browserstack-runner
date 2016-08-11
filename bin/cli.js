@@ -382,7 +382,7 @@ function runTests(config, callback) {
       logger.trace('runTests: creating tunnel');
       tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function (err) {
         if(err) {
-          cleanUpAndExit(null, err, {}, callback);
+          cleanUpAndExit(null, err, [], callback);
         } else {
           logger.trace('runTests: created tunnel');
 

@@ -26,12 +26,12 @@ try {
   config = require(config_path);
 } catch (e) {
   if (e.code === 'MODULE_NOT_FOUND') {
-    console.err('Configuration file `browserstack.json` is missing.');
+    console.error('Configuration file `browserstack.json` is missing.');
     throw new Error('Configuration file `browserstack.json` is missing.');
   } else {
-    console.err('Invalid configuration in `browserstack.json` file');
-    console.err(e.message);
-    console.err(e.stack);
+    console.error('Invalid configuration in `browserstack.json` file');
+    console.error(e.message);
+    console.error(e.stack);
     throw new Error('Invalid configuration in `browserstack.json` file');
   }
 }
@@ -39,9 +39,9 @@ try {
 var runner = require('./cli.js');
 runner.run(config, function(err) {
   if(err) {
-    console.err(err);
-    console.err(err.stack);
-    console.err('Invalid Command');
+    console.error(err);
+    console.error(err.stack);
+    console.error('Invalid Command');
     process.exit(1);
   }
   process.exit(0);
