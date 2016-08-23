@@ -306,26 +306,16 @@ These can also be provided by a build server, for example [using secure environm
 Check out code sample [here].
 [here]:https://github.com/browserstack/browserstack-runner-sample
 
-### Tests
+### Running Tests
 
-Testing involves pulling sample repos with test cases and running tests against them.
-```
-git submodule update --init --recursive
-npm test
-```
+BrowserStack Runner is currently tested by running test cases defined in [QUnit](https://github.com/jquery/qunit), [Mocha](https://github.com/mochajs/mocha), and [Spine](https://github.com/spine/spine) repositories.
 
-Sample `browserstack.json`:
-```
-{
-  "username": "BROWSERSTACK_USERNAME",
-  "key": "BROWSERSTACK_KEY",
-  "test_path": "tests/external-repos/<sample-repo-name-here>/test/test.html",
-  "debug": true,
-  "browsers": [
-     "chrome_latest",
-     "firefox_latest",
-     "ie_11",
-     ...
-  ]
-}
-```
+To run tests:
+
+    npm test
+
+To run a larger suite of tests ensuring compatibility with older versions of QUnit, etc.:
+
+    npm run test-ci
+
+Tests are also run for every pull request, courtesy [Travis CI](https://travis-ci.org/).
