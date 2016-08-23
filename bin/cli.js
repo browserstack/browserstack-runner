@@ -1,28 +1,8 @@
-#! /usr/bin/env node
-
-var todo = process.argv[2];
-
-if (todo === '--verbose') {
-  global.logLevel = process.env.LOG_LEVEL || 'debug';
-} else {
-  global.logLevel = 'info';
-}
-
-if (todo === 'init') {
-  require('./init.js');
-  return;
-} else if (todo === '--version') {
-  require('./version.js');
-  return;
-}
-
 var Log = require('../lib/logger'),
-    logger = new Log(global.logLevel),
+    logger = new Log(global.logLevel || 'info'),
     BrowserStack = require('browserstack'),
-    fs = require('fs'),
     qs = require('querystring'),
     chalk = require('chalk'),
-    config = require('../lib/config'),
     utils = require('../lib/utils'),
     Server = require('../lib/server').Server,
     Tunnel = require('../lib/local').Tunnel,
@@ -30,14 +10,15 @@ var Log = require('../lib/logger'),
     http = require('http'),
     ConfigParser = require('../lib/configParser').ConfigParser,
     serverPort = 8888,
+    config,
     server,
     timeout,
     activityTimeout,
     ackTimeout,
+    client,
     workers = {},
     workerKeys = {},
-    tunnelingAgent,
-    tunnel;
+    tunnelingAgent;
 
 function terminateAllWorkers(callback) {
   logger.trace('terminateAllWorkers');
@@ -81,7 +62,10 @@ function terminateAllWorkers(callback) {
   }
 }
 
-function cleanUpAndExit(signal, status) {
+function cleanUpAndExit(signal, error, report, callback) {
+  ConfigParser.finalBrowsers = [];
+  callback = callback || function() {};
+  report = report || [];
   logger.trace('cleanUpAndExit: signal: %s', signal);
 
   try {
@@ -95,23 +79,18 @@ function cleanUpAndExit(signal, status) {
   }
 
   try {
-    process.kill(tunnel.process.pid, 'SIGKILL');
+    process.kill(tunnel.process.pid, 'SIGTERM');
   } catch (e) {
     logger.debug('Non existent tunnel');
-  }
-  try {
-    fs.unlinkSync(pid_file);
-  } catch (e) {
-    logger.debug('Non existent pid file.');
   }
 
   if (signal === 'SIGTERM') {
     logger.debug('Exiting');
-    process.exit(status);
+    callback(error, report);
   } else {
     terminateAllWorkers(function() {
       logger.debug('Exiting');
-      process.exit(1);
+      callback(error, report);
     });
   }
 }
@@ -126,7 +105,6 @@ function getTestBrowserInfo(browserString, path) {
   return info;
 }
 
-
 function buildTestUrl(test_path, worker_key, browser_string) {
   var url = 'http://localhost:' + serverPort + '/' + test_path;
 
@@ -140,12 +118,11 @@ function buildTestUrl(test_path, worker_key, browser_string) {
   return url;
 }
 
-
-function launchServer() {
+function launchServer(config, callback) {
   logger.trace('launchServer:', serverPort);
   logger.debug('Launching server on port:', serverPort);
 
-  server = new Server(client, workers);
+  server = new Server(client, workers, config, callback);
   server.listen(parseInt(serverPort, 10));
 }
 
@@ -184,11 +161,6 @@ function launchBrowser(browser, path) {
 
     if (err || typeof worker !== 'object') {
       logger.info('Error from BrowserStack: ', err);
-      utils.alertBrowserStack('Failed to launch worker',
-                              'Arguments: ' + JSON.stringify({
-                                err: err,
-                                worker: worker
-                              }, null, 4));
       return;
     }
 
@@ -218,7 +190,6 @@ function launchBrowsers(config, browser) {
     }
   }, 100);
 }
-
 
 function attachWorkerHelpers(worker) {
   // TODO: Consider creating instances of a proper 'Worker' class
@@ -286,11 +257,10 @@ function attachWorkerHelpers(worker) {
   return worker;
 }
 
-
 var statusPoller = {
   poller: null,
 
-  start: function() {
+  start: function(callback) {
     logger.trace('statusPoller.start');
 
     statusPoller.poller = setInterval(function () {
@@ -324,9 +294,6 @@ var statusPoller = {
               if (!worker.isAckd) {
                 logger.trace('[%s] worker.activityTimeout', worker.id);
 
-                var subject = 'Worker inactive for too long: ' + worker.string;
-                var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
-                utils.alertBrowserStack(subject, content, null, function(){});
                 delete workers[workerData.key];
                 delete workerKeys[worker.id];
                 config.status += 1;
@@ -339,7 +306,11 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.activityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  process.exit('SIGTERM');
+                  if(server && server.reports) {
+                    callback(null, server.reports);
+                  } else {
+                    callback(null, {});
+                  }
                 }
               } else {
                 logger.trace('[%s] worker.activityTimeout: already ackd', worker.id);
@@ -353,9 +324,6 @@ var statusPoller = {
               if (worker.isAckd) {
                 logger.trace('[%s] worker.testActivityTimeout', worker.id);
 
-                var subject = 'Tests timed out on: ' + worker.string;
-                var content = 'Worker details:\n' + JSON.stringify(worker.config, null, 4);
-                utils.alertBrowserStack(subject, content, null, function(){});
                 delete workers[workerData.key];
                 delete workerKeys[worker.id];
                 config.status += 1;
@@ -368,7 +336,11 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.testActivityTimeout: all tests done', worker.id, config.status && 'with failures');
-                  process.exit('SIGTERM');
+                  if(server && server.reports) {
+                    callback(null, server.reports);
+                  } else {
+                    callback(null, {});
+                  }
                 }
               } else {
                 logger.trace('[%s] worker.testActivityTimeout: not ackd', worker.id);
@@ -386,7 +358,11 @@ var statusPoller = {
   }
 };
 
-function runTests() {
+function runTests(config, callback) {
+  var runTestsCallback = function(error, report) {
+    ConfigParser.finalBrowsers = [];
+    callback(error, report);
+  };
   if (config.proxy) {
     logger.trace('runTests: with proxy', config.proxy);
 
@@ -394,58 +370,64 @@ function runTests() {
       proxy: config.proxy
     });
     var oldhttpreq = http.request;
-    http.request = function (options, callback) {
+    http.request = function (options, reqCallback) {
       options.agent = tunnelingAgent;
-      return oldhttpreq.call(null, options, callback);
+      return oldhttpreq.call(null, options, reqCallback);
     };
   }
   if (config.browsers && config.browsers.length > 0) {
     ConfigParser.parse(client, config.browsers, function(browsers){
-      launchServer();
+      launchServer(config, runTestsCallback);
 
       logger.trace('runTests: creating tunnel');
-      tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, function () {
-        logger.trace('runTests: created tunnel');
+      tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function (err) {
+        if(err) {
+          cleanUpAndExit(null, err, [], callback);
+        } else {
+          logger.trace('runTests: created tunnel');
 
-        statusPoller.start();
-        var total_runs = config.browsers.length * (Array.isArray(config.test_path) ? config.test_path.length : 1);
-        logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
-        browsers.forEach(function(browser) {
-          if (browser.browser_version === 'latest') {
-            logger.debug('[%s] Finding version.', utils.browserString(browser));
-            logger.trace('runTests: client.getLatest');
+          statusPoller.start(runTestsCallback);
+          var total_runs = config.browsers.length * (Array.isArray(config.test_path) ? config.test_path.length : 1);
+          logger.info('Launching ' + config.browsers.length + ' worker(s) for ' + total_runs + ' run(s).');
+          browsers.forEach(function(browser) {
+            if (browser.browser_version === 'latest') {
+              logger.debug('[%s] Finding version.', utils.browserString(browser));
+              logger.trace('runTests: client.getLatest');
 
-            client.getLatest(browser, function(err, version) {
-              logger.trace('runTests: client.getLatest | response:', version, err);
-              logger.debug('[%s] Version is %s.',
-                           utils.browserString(browser), version);
-                           browser.browser_version = version;
-                           // So that all latest logs come in together
-                           launchBrowsers(config, browser);
-            });
-          } else {
-            launchBrowsers(config, browser);
-          }
-        });
+              client.getLatest(browser, function(err, version) {
+                logger.trace('runTests: client.getLatest | response:', version, err);
+                logger.debug('[%s] Version is %s.',
+                             utils.browserString(browser), version);
+                             browser.browser_version = version;
+                             // So that all latest logs come in together
+                             launchBrowsers(config, browser);
+              });
+            } else {
+              launchBrowsers(config, browser);
+            }
+          });
+        }
       });
     });
   } else {
-    launchServer();
+    launchServer(config, callback);
   }
 }
 
-try {
-  var client = BrowserStack.createClient({
-    username: config.username,
-    password: config.key
-  });
-  runTests();
-  var pid_file = process.cwd() + '/browserstack-run.pid';
-  fs.writeFileSync(pid_file, process.pid, 'utf-8');
-  process.on('exit', function(signal){
-    cleanUpAndExit(signal, config.status);
-  });
-} catch (e) {
-  console.log(e);
-  console.log('Invalid command.');
-}
+exports.run = function(user_config, callback) {
+  callback = callback || function() {};
+
+  try {
+    config = new (require('../lib/config').config)(user_config);
+
+    client = BrowserStack.createClient({
+      username: config.username,
+      password: config.key
+    });
+    runTests(config, function(error, report) {
+      cleanUpAndExit('SIGTERM', error, report, callback);
+    });
+  } catch (e) {
+    callback(e);
+  }
+};

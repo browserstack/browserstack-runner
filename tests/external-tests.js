@@ -9,7 +9,7 @@ var browserstackConfig = {
 };
 
 var mode = (process.env.TEST_MODE || 'all').toLowerCase();
-var runnerPath = path.resolve(path.join(__dirname, '..', 'bin', 'cli.js'));
+var runnerPath = path.resolve(path.join(__dirname, '..', 'bin', 'runner.js'));
 var testHome = path.resolve(__dirname);
 process.chdir(testHome);
 
@@ -96,9 +96,9 @@ var repositories = [
       'test/browser/opts.html'
     ],
     expected_results: {
-      tests: 94,
-      passed: 80,
-      failed: 14
+      tests: 86,
+      passed: 78,
+      failed: 8
     }
   },
   {

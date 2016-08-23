@@ -1,3 +1,7 @@
+# BrowserStack Runner
+
+[![Build Status](https://travis-ci.org/browserstack/browserstack-runner.svg?branch=master)](https://travis-ci.org/browserstack/browserstack-runner)
+
 A command line interface to run browser tests over BrowserStack.
 
 ## Usage
@@ -20,6 +24,137 @@ If you're getting an error `EACCES open ... BrowserStackLocal`, configure npm to
     npm -g config set user [user]
 
 Where `[user]` is replaced with a local user with enough permissions.
+
+## Usage as a module
+
+`browserstack-runner` can also be used as a module. To run your tests, inside your project do -
+
+```node
+var browserstackRunner = require('browserstack-runner');
+
+var config = require('./browserstack.json');
+
+browserstackRunner.run(config, function(error, report) {
+  if(error) {
+    console.log("Error:" + error);
+    return;
+  }
+  console.log(JSON.stringify(report, null, 2));
+  console.log("Test Finished");
+});
+```
+
+The callback to `browserstackRunner.run` is called with two params -
+- `error`: This parameter is either `null` or an `Error` object (if test execution failed) with message as the reason of why executing the tests on `BrowserStack` failed.
+- `report`: This is an array which can be used to keep track of the executed tests and suites in a run. Each object in the array has the following keys -
+  - `browser`: The name of the browser the test executed on.
+  - `tests`: An array of `Test` objects. The `Test` Objects are described [here](https://github.com/js-reporters/js-reporters#event-data)
+  - `suites`: A global Suite Object as described [here](https://github.com/js-reporters/js-reporters#event-data)
+
+The structure of the `report` object is as follows -
+
+```json
+[
+  {
+    "browser": "Windows 7, Firefox 47.0",
+    "tests": [
+      {
+        "name": "isOdd()",
+        "suiteName": "Odd Tests",
+        "fullName": [
+          "Odd Tests",
+          "isOdd()"
+        ],
+        "status": "passed",
+        "runtime": 2,
+        "errors": [],
+        "assertions": [
+          {
+            "passed": true,
+            "actual": true,
+            "expected": true,
+            "message": "One is an odd number"
+          },
+          {
+            "passed": true,
+            "actual": true,
+            "expected": true,
+            "message": "Three is an odd number"
+          },
+          {
+            "passed": true,
+            "actual": true,
+            "expected": true,
+            "message": "Zero is not odd number"
+          }
+        ]
+      }
+    ],
+    "suites": {
+      "fullName": [],
+      "childSuites": [
+        {
+          "name": "Odd Tests",
+          "fullName": [
+            "Odd Tests"
+            ],
+          "childSuites": [],
+          "tests": [
+            {
+              "name": "isOdd()",
+              "suiteName": "Odd Tests",
+              "fullName": [
+                "Odd Tests",
+                "isOdd()"
+              ],
+              "status": "passed",
+              "runtime": 2,
+              "errors": [],
+              "assertions": [
+                {
+                  "passed": true,
+                  "actual": true,
+                  "expected": true,
+                  "message": "One is an odd number"
+                },
+                {
+                  "passed": true,
+                  "actual": true,
+                  "expected": true,
+                  "message": "Three is an odd number"
+                },
+                {
+                  "passed": true,
+                  "actual": true,
+                  "expected": true,
+                  "message": "Zero is not odd number"
+                }
+              ]
+            }
+          ],
+          "status": "passed",
+          "testCounts": {
+            "passed": 1,
+            "failed": 0,
+            "skipped": 0,
+            "total": 1
+          },
+          "runtime": 2
+        }
+      ],
+      "tests": [],
+      "status": "passed",
+      "testCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "runtime": 2
+    }
+  }
+]
+```
 
 ## Configuration
 
