@@ -56,7 +56,9 @@ describe('Server Assertions', function() {
 
     beforeEach(function() {
       sandBox = sinon.sandbox.create();
-      bsClient = sandBox.stub();
+      bsClient = {
+        takeScreenshot: sandBox.stub()
+      },
       infoLoggerStub = sandBox.stub(browserStackRunnerServer.logger, 'info');
 
       server = browserStackRunnerServer.Server(bsClient, workers, getBaseConfig(), function(error, reports) {
@@ -70,7 +72,7 @@ describe('Server Assertions', function() {
       server.close();
     });
 
-    it('logs', function(done) {
+    it('logs console.log correctly', function(done) {
       var browserString = 'OS X Chrome 54'
       requestServer('/_log', '{"arguments":["Random String"]}', {
         'x-browser-string': browserString
@@ -91,8 +93,7 @@ describe('Server Assertions', function() {
       });
     });
 
-    it('test errors', function(done) {
-      this.timeout(0);
+    it('logs test errors correctly', function(done) {
       var browserUUIDString = 'abcd-efgh-1234-5678',
         browserInfoString = 'browserInfo';
 
@@ -140,6 +141,55 @@ describe('Server Assertions', function() {
           assert.equal(infoLoggerStub.getCalls()[2].args.length, 2);
           assert.equal(infoLoggerStub.getCalls()[2].args[0], '[%s] Log: undefined');
           assert.equal(infoLoggerStub.getCalls()[2].args[1], 'workerString');
+          done();
+        });
+      });
+    });
+
+    it('logs for test reports correctly', function(done) {
+      var browserUUIDString = 'abcd-efgh-1234-5678',
+        browserString = 'OS X Chrome 41',
+        browserInfoString = 'browserInfo';
+
+      workers[browserUUIDString] = {
+        getTestBrowserInfo: sandBox.stub().returns(browserInfoString),
+        string: 'workerString'
+      };
+      var requestBodyObject = {
+        testCounts: {
+          total: 1,
+          passed: 1,
+          failed: 0,
+          skipped: 0
+        },
+        runtime: '00:01:00',
+        status: 'passed'
+      };
+
+      requestServer('/_report', JSON.stringify(requestBodyObject), {
+        'x-worker-uuid': browserUUIDString
+      }, function(error) {
+        if(error) done(error);
+        assert.equal(infoLoggerStub.called, true);
+        assert.equal(infoLoggerStub.callCount, 1);
+        assert.equal(infoLoggerStub.getCalls()[0].args.length, 7);
+        assert.equal(infoLoggerStub.getCalls()[0].args[0], '[%s] ' + chalk['green']('Passed:') + ' %d tests, %d passed, %d failed, %d skipped; ran for %dms');
+        assert.equal(infoLoggerStub.getCalls()[0].args[1], browserInfoString);
+        assert.equal(infoLoggerStub.getCalls()[0].args[2], 1);
+        assert.equal(infoLoggerStub.getCalls()[0].args[3], 1);
+        assert.equal(infoLoggerStub.getCalls()[0].args[4], 0);
+        assert.equal(infoLoggerStub.getCalls()[0].args[5], 0);
+        assert.equal(infoLoggerStub.getCalls()[0].args[6], '00:01:00');
+
+        requestServer('/_report', '{"arguments":["Invalid Random String', {
+          'x-worker-uuid': browserUUIDString,
+          'x-browser-string': browserString
+        }, function(error) {
+          if(error) done(error);
+          assert.equal(infoLoggerStub.callCount, 2);
+          assert.equal(infoLoggerStub.getCalls()[1].args.length, 2);
+          assert.equal(infoLoggerStub.getCalls()[1].args[0], '[%s] Null response from remote Browser');
+          assert.equal(infoLoggerStub.getCalls()[1].args[1], browserString);
           done();
         });
       });
