@@ -276,7 +276,7 @@ var statusPoller = {
         }).forEach(function(_worker) {
           var workerData = workerKeys[_worker.id];
           var worker = workers[workerData.key];
-          if (worker.launched) {
+          if (!worker || worker.launched) {
             return;
           }
 
