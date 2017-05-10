@@ -131,9 +131,9 @@ var repositories = [
     browsers: [
       {
         'browser': 'safari',
-        'browser_version': '5.1',
+        'browser_version': '9.0',
         'os': 'OS X',
-        'os_version': 'Snow Leopard'
+        'os_version': 'El Capitan'
       }
     ],
     test_path: [
