@@ -168,10 +168,12 @@ To run browser tests on BrowserStack infrastructure, you need to create a `brows
  * `key`: BrowserStack [access key](https://www.browserstack.com/accounts/local-testing) (Or `BROWSERSTACK_KEY` environment variable)
  * `test_path`: Path to the test page which will run the tests when opened in a browser.
  * `test_framework`: Specify test framework which will run the tests. Currently supporting qunit, jasmine, jasmine2 and mocha.
+ * `test_server_port`: Specify test server port that will be opened from BrowserStack. If not set the default port 8888 will be used. Find a [list of all supported ports on browerstack.com](https://www.browserstack.com/question/664).
  * `timeout`: Specify worker timeout with BrowserStack.
  * `browsers`: A list of browsers on which tests are to be run. Find a [list of all supported browsers and platforms on browerstack.com](https://www.browserstack.com/list-of-browsers-and-platforms?product=js_testing).
  * `build`: A string to identify your test run in Browserstack.  In `TRAVIS` setup `TRAVIS_COMMIT` will be the default identifier.
  * `proxy`: Specify a proxy to use for the local tunnel. Object with `host`, `port`, `username` and `password` properties.
+ * `tunnel_pid`: Specify a path to file to save the tunnel process id into.
 
 A sample configuration file:
 
@@ -181,6 +183,7 @@ A sample configuration file:
   "key": "<access key>",
   "test_framework": "qunit|jasmine|jasmine2|mocha",
   "test_path": ["relative/path/to/test/page1", "relative/path/to/test/page2"],
+  "test_server_port": "8899",
   "browsers": [
     {
       "browser": "ie",
