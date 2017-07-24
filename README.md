@@ -172,6 +172,7 @@ To run browser tests on BrowserStack infrastructure, you need to create a `brows
  * `browsers`: A list of browsers on which tests are to be run. Find a [list of all supported browsers and platforms on browerstack.com](https://www.browserstack.com/list-of-browsers-and-platforms?product=js_testing).
  * `build`: A string to identify your test run in Browserstack.  In `TRAVIS` setup `TRAVIS_COMMIT` will be the default identifier.
  * `proxy`: Specify a proxy to use for the local tunnel. Object with `host`, `port`, `username` and `password` properties.
+ * `exit_with_fail`: If set to true the cli process will exit with fail if any of the tests failed. Useful for automatic build systems.
 
 A sample configuration file:
 
