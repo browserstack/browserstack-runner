@@ -306,10 +306,11 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.activityTimeout: all tests done', worker.id, config.status && 'with failures');
+                  var testsFailedError = utils.createTestsFailedError(config);
                   if(server && server.reports) {
-                    callback(null, server.reports);
+                    callback(testsFailedError, server.reports);
                   } else {
-                    callback(null, {});
+                    callback(testsFailedError, {});
                   }
                 }
               } else {
@@ -336,10 +337,11 @@ var statusPoller = {
                   }
 
                   logger.trace('[%s] worker.testActivityTimeout: all tests done', worker.id, config.status && 'with failures');
+                  var testsFailedError = utils.createTestsFailedError(config);
                   if(server && server.reports) {
-                    callback(null, server.reports);
+                    callback(testsFailedError, server.reports);
                   } else {
-                    callback(null, {});
+                    callback(testsFailedError, {});
                   }
                 }
               } else {

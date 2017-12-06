@@ -39,9 +39,13 @@ try {
 var runner = require('./cli.js');
 runner.run(config, function(err) {
   if(err) {
-    console.error(err);
-    console.error(err.stack);
-    console.error('Invalid Command');
+    if (err.name === 'TestsFailedError') {
+      console.error('Exit with fail due to some tests failure.');
+    } else {
+      console.error(err);
+      console.error(err.stack);
+      console.error('Invalid Command');
+    }
     process.exit(1);
   }
   process.exit(0);
