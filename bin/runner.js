@@ -37,9 +37,15 @@ try {
 }
 
 // extract a path to file to store tunnel pid
-var matches, pid = process.argv.find(function (param) { return param.indexOf('--pid') !== -1; });
-if (pid && (matches = /-pid=([\w\/\.-]+)/g.exec(pid))) {
-  config.tunnel_pid = matches[1];
+var pid = process.argv.find(function (param) { return param.indexOf('--pid') !== -1; });
+
+if (pid) {
+  var extracted_path = /--pid=([\w\/\.-]+)/g.exec(pid);
+  if (extracted_path) {
+    config.tunnel_pid_file = extracted_path[1];
+  } else {
+    console.error('Error while parsing flag --pid. Usage: --pid=/path/to/file');
+  }
 }
 
 var runner = require('./cli.js');
