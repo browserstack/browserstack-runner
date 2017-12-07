@@ -9,7 +9,6 @@ var Log = require('../lib/logger'),
     tunnel = require('tunnel'),
     http = require('http'),
     ConfigParser = require('../lib/configParser').ConfigParser,
-    serverPort = 8888,
     config,
     server,
     timeout,
@@ -106,7 +105,7 @@ function getTestBrowserInfo(browserString, path) {
 }
 
 function buildTestUrl(test_path, worker_key, browser_string) {
-  var url = 'http://localhost:' + serverPort + '/' + test_path;
+  var url = 'http://localhost:' + config.test_server_port + '/' + test_path;
 
   var querystring = qs.stringify({
     _worker_key: worker_key,
@@ -119,11 +118,11 @@ function buildTestUrl(test_path, worker_key, browser_string) {
 }
 
 function launchServer(config, callback) {
-  logger.trace('launchServer:', serverPort);
-  logger.debug('Launching server on port:', serverPort);
+  logger.trace('launchServer:', config.test_server_port);
+  logger.debug('Launching server on port:', config.test_server_port);
 
   server = new Server(client, workers, config, callback);
-  server.listen(parseInt(serverPort, 10));
+  server.listen(parseInt(config.test_server_port, 10));
 }
 
 function launchBrowser(browser, path) {
@@ -382,7 +381,7 @@ function runTests(config, callback) {
       launchServer(config, runTestsCallback);
 
       logger.trace('runTests: creating tunnel');
-      tunnel = new Tunnel(config.key, serverPort, config.tunnelIdentifier, config, function (err) {
+      tunnel = new Tunnel(config.key, config.test_server_port, config.tunnelIdentifier, config, function (err) {
         if(err) {
           cleanUpAndExit(null, err, [], callback);
         } else {

@@ -4,7 +4,7 @@ var todo = process.argv[2],
   path = require('path'),
   config;
 
-if (todo === '--verbose') {
+if (process.argv.indexOf('--verbose') !== -1) {
   global.logLevel = process.env.LOG_LEVEL || 'debug';
 } else {
   global.logLevel = 'info';
@@ -33,6 +33,18 @@ try {
     console.error(e.message);
     console.error(e.stack);
     throw new Error('Invalid configuration in `browserstack.json` file');
+  }
+}
+
+// extract a path to file to store tunnel pid
+var pid = process.argv.find(function (param) { return param.indexOf('--pid') !== -1; });
+
+if (pid) {
+  var extracted_path = /--pid=([\w\/\.-]+)/g.exec(pid);
+  if (extracted_path) {
+    config.tunnel_pid_file = extracted_path[1];
+  } else {
+    console.error('Error while parsing flag --pid. Usage: --pid=/path/to/file');
   }
 }
 
