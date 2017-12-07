@@ -4,7 +4,7 @@ var todo = process.argv[2],
   path = require('path'),
   config;
 
-if (todo === '--verbose') {
+if (process.argv.indexOf('--verbose') !== -1) {
   global.logLevel = process.env.LOG_LEVEL || 'debug';
 } else {
   global.logLevel = 'info';
@@ -34,6 +34,12 @@ try {
     console.error(e.stack);
     throw new Error('Invalid configuration in `browserstack.json` file');
   }
+}
+
+// extract a path to file to store tunnel pid
+var matches, pid = process.argv.find(function (param) { return param.indexOf('--pid') !== -1; });
+if (pid && (matches = /-pid=([\w\/\.-]+)/g.exec(pid))) {
+  config.tunnel_pid = matches[1];
 }
 
 var runner = require('./cli.js');
