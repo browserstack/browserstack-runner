@@ -174,7 +174,7 @@ To run browser tests on BrowserStack infrastructure, you need to create a `brows
  * `build`: A string to identify your test run in Browserstack.  In `TRAVIS` setup `TRAVIS_COMMIT` will be the default identifier.
  * `proxy`: Specify a proxy to use for the local tunnel. Object with `host`, `port`, `username` and `password` properties.
  * `exit_with_fail`: If set to true the cli process will exit with fail if any of the tests failed. Useful for automatic build systems.
- * `tunnel_pid`: Specify a path to file to save the tunnel process id into.
+ * `tunnel_pid_file`: Specify a path to file to save the tunnel process id into. Can also by specified using the `--pid` flag while launching browserstack-runner from the command line.
 
 A sample configuration file:
 
