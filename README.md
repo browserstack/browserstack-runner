@@ -323,3 +323,13 @@ To run a larger suite of tests ensuring compatibility with older versions of QUn
     npm run test-ci
 
 Tests are also run for every pull request, courtesy [Travis CI](https://travis-ci.org/).
+
+### Timeout issue with Travis CI
+ 
+You might face [build timeout issue on Travis](https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received) if runner takes more than 10 minutes to run tests. 
+
+There are 2 possible ways to solve this problem: 
+  1. Run a script which does `console.log` every 1-2 minutes. This will output to console and hence avoid Travis build timeout
+  2. Use `travis_wait` function provided by Travis-CI. You can prefix `browserstack-runner` command by `travis-wait` in your `travis.yml` file
+
+We would recommend using `travis_wait` function. It also allows you to configure wait time (ex: `travis_wait 20 browserstack-runner`, this will extend wait time to 20 minutes). Read more about `travis_wait` [here](https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received)
