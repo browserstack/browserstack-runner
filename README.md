@@ -307,8 +307,7 @@ These can also be provided by a build server, for example [using secure environm
 
 ### Code Sample
 
-Check out code sample [here].
-[here]:https://github.com/browserstack/browserstack-runner-sample
+Check out code sample [here](https://github.com/browserstack/browserstack-runner-sample).
 
 ### Running Tests
 
