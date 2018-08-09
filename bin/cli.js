@@ -104,9 +104,15 @@ function getTestBrowserInfo(browserString, path) {
   return info;
 }
 
-function buildTestUrl(test_path, worker_key, browser_string) {
-  var url = 'http://localhost:' + config.test_server_port + '/' + test_path;
-
+function buildTestUrl(test_path, worker_key, browser) {
+  var host;
+  if (browser.os.toLowerCase() === 'ios' ){
+    host = 'bs-local.com';
+  } else {
+    host = 'localhost';
+  }
+  var url = 'http://'+host+':' + config.test_server_port + '/' + test_path;
+  var browser_string = utils.browserString(browser);
   var querystring = qs.stringify({
     _worker_key: worker_key,
     _browser_string: browser_string
@@ -131,7 +137,7 @@ function launchBrowser(browser, path) {
   var browserInfo = getTestBrowserInfo(browserString, path);
   logger.debug('[%s] Launching', browserInfo);
 
-  browser.url = buildTestUrl(path.replace(/\\/g, '/'), key, browserString);
+  browser.url = buildTestUrl(path.replace(/\\/g, '/'), key, browser);
 
   if (config.project) {
     browser.project = config.project;
@@ -195,7 +201,7 @@ function attachWorkerHelpers(worker) {
 
   worker.buildUrl = function buildUrl(test_path) {
     var workerKey = workerKeys[this.id] ? workerKeys[this.id].key : null;
-    var url = buildTestUrl(test_path || this.test_path, workerKey, this.getTestBrowserInfo());
+    var url = buildTestUrl(test_path || this.test_path, workerKey, this.config);
     logger.trace('[%s] worker.buildUrl: %s', this.id, url);
     return url;
   };

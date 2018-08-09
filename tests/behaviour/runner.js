@@ -26,6 +26,13 @@ var getBaseConfig = function() {
       browser_version: '52.0',
       os: 'Windows',
       os_version: '7'
+    }, {
+      browser: 'iphone',
+      browser_version: '',
+      device: 'iPhone SE',
+      os: 'ios',
+      os_version: '11.2',
+      real_mobile: true
     } ]
   }
 };
@@ -100,7 +107,7 @@ describe('Pass/Fail reporting', function() {
   it('report keys should have browser names', function(done) {
     var config = getBaseConfig();
     browserstackRunner.run(config, function(err, reports) {
-      var shouldBePresentBrowsers = [ 'Windows 7, Chrome 52.0', 'Windows 7, Firefox 47.0' ];
+      var shouldBePresentBrowsers = [ 'Windows 7, Chrome 52.0', 'Windows 7, Firefox 47.0', 'ios 11.2, Iphone '];
       assert.equal(err, null);
       reports.forEach(function(report) {
         var numMatched = 0;
