@@ -1,13 +1,14 @@
 #! /usr/bin/env node
 
 var fs = require('fs');
-var preset = process.argv[3] || 'default';
+var preset = require('./runner').preset;
+var path = require('./runner').path;
 var browsers = require('../presets/' + preset + '.json');
 
 var config = {
   username: 'BROWSERSTACK_USERNAME',
   key: 'BROWSERSTACK_KEY',
-  test_path: 'path/to/test/runner',
+  test_path: path || 'path/to/test/runner',
   browsers: browsers
 };
 

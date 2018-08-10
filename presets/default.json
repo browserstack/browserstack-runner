@@ -3,48 +3,56 @@
     "browser": "firefox",
     "browser_version": "latest",
     "os": "OS X",
-    "os_version": "Lion"
+    "os_version": "Lion",
+    "cli_key": 1
   },
   {
     "browser": "safari",
     "browser_version": "latest",
     "os": "OS X",
-    "os_version": "Mountain Lion"
+    "os_version": "Mountain Lion",
+    "cli_key": 2
   },
   {
     "browser": "chrome",
     "browser_version": "latest",
     "os": "OS X",
-    "os_version": "Mountain Lion"
+    "os_version": "Mountain Lion",
+    "cli_key": 3
   },
   {
     "browser": "firefox",
     "browser_version": "latest",
     "os": "Windows",
-    "os_version": "7"
+    "os_version": "7",
+    "cli_key": 4
   },
   {
     "browser": "chrome",
     "browser_version": "latest",
     "os": "Windows",
-    "os_version": "7"
+    "os_version": "7",
+    "cli_key": 5
   },
   {
     "browser": "ie",
     "browser_version": "9.0",
     "os": "Windows",
-    "os_version": "7"
+    "os_version": "7",
+    "cli_key": 6
   },
   {
     "browser": "ie",
     "browser_version": "10.0",
     "os": "Windows",
-    "os_version": "8"
+    "os_version": "8",
+    "cli_key": 7
   },
   {
     "browser": "ie",
     "browser_version": "11.0",
     "os": "Windows",
-    "os_version": "7"
+    "os_version": "7",
+    "cli_key": 8
   }
 ]
