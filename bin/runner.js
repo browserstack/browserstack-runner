@@ -11,7 +11,7 @@ var yargs = require('yargs')
       type: 'string',
       default: '/path/to/test/runner',
       description: 'path to test runner to be inserted in browserstack.json'
-    })
+    });
   })
   .option('browsers', {
     alias: 'b',
