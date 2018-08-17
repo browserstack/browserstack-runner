@@ -146,7 +146,7 @@ describe('Pass/Fail reporting', function() {
       browserstackRunner.run(config, function(err, reports) {
         assert.equal(err, null);
         reports.forEach(function(report) {
-          assert.equal(report.tests.length, 3);
+          assert.equal(report.tests.length, 4);
         });
         done();
       });
@@ -177,7 +177,7 @@ describe('Pass/Fail reporting', function() {
         reports.forEach(function(report) {
           Object.keys(report.tests).forEach(function(reportKey) {
             report.tests[reportKey].assertions.forEach(function(assertion) {
-              assert.notEqual(assertion['message'].match(/\d+ is .*an .* number/), null);
+              assert.notEqual(assertion['message'].match(/(\d+ is .*an .* number|console\..*? exists)/), null);
             });
           });
         });
@@ -216,8 +216,8 @@ describe('Pass/Fail reporting', function() {
       browserstackRunner.run(config, function(err, reports) {
         assert.equal(err, null);
         reports.forEach(function(report) {
-          assert.equal(report.suites.testCounts['total'], 3);
-          assert.equal(report.suites.testCounts['passed'], 1);
+          assert.equal(report.suites.testCounts['total'], 4);
+          assert.equal(report.suites.testCounts['passed'], 2);
           assert.equal(report.suites.testCounts['failed'], 2);
           assert.equal(report.suites.testCounts['skipped'], 0);
         });

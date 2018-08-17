@@ -1,4 +1,13 @@
 QUnit.module('Partial Tests', function() {
+  QUnit.test('console Tests', function(assert) {
+    // console functions should exist
+    assert.ok(typeof console.info === 'function', 'console.info exists');
+    assert.ok(typeof console.warn === 'function', 'console.warn exists');
+    assert.ok(typeof console.log === 'function', 'console.log exists');
+    assert.ok(typeof console.error === 'function', 'console.error exists');
+    assert.ok(typeof console.debug === 'function', 'console.debug exists');
+  });
+
   QUnit.test('Partial Tests', function(assert) {
     // Fails
     assert.ok(isOdd(2), '2 is an odd number');
