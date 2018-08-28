@@ -69,11 +69,11 @@ try {
 }
 
 // extract a path to file to store tunnel pid
-if(yargs['pid']) {
-  if(yargs['pid'].length > 0) {
-    config.tunnel_pid_file = yargs['pid'];
+if(yargs.hasOwnProperty('pid')) {
+  if(yargs['pid'].trim().length > 0) {
+    config.tunnel_pid_file = yargs['pid'].trim();
   } else {
-    console.error('Error while parsing flag --pid. Usage: --pid=/path/to/file');
+    throw new Error('Empty pid file path');
   }
 }
 
@@ -84,7 +84,13 @@ if(yargs['browsers']) {
       return yargs['browsers'].indexOf(browser['cli_key']) !== -1;
     });
   } else {
-    console.error('No browser keys specified. Usage --browsers <key1> <key2> ...');
+    throw new Error('No browser keys specified. Usage --browsers <key1> <key2> ...');
+  }
+  if(config.browsers.length === 0) {
+    throw new Error('Invalid browser keys');
+  }
+  if(config.browsers.length < yargs['browsers'].length) {
+    console.warn('Some browser keys not present in config file.');
   }
 }
 
