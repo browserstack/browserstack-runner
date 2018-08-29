@@ -25,6 +25,19 @@ If you're getting an error `EACCES open ... BrowserStackLocal`, configure npm to
 
 Where `[user]` is replaced with a local user with enough permissions.
 
+CLI options:
+
+`--path`: Can be used if a different test runner is needed other than the one present in the `browserstack.json` file.
+
+`--pid`: Custom `pid` file that stores the pid's of the BrowserStackLocal instances created.
+
+`--verbose` or `-v`: For verbose logging.
+
+`--browsers` or `-b`: Space separated list of `cli_key` as defined in the `browserstack.json` file. This will run tests on the selected browsers only. If not present tests will run on all browsers present in the configuration file.
+
+Sample Usage:
+`browserstack_runner --browsers 1 2 3 --path 'path/to/test/runner' --pid 'path/to/pid/file' -v`
+
 ## Usage as a module
 
 `browserstack-runner` can also be used as a module. To run your tests, inside your project do -
@@ -160,7 +173,11 @@ The structure of the `report` object is as follows -
 
 To run browser tests on BrowserStack infrastructure, you need to create a `browserstack.json` file in project's root directory (the directory from which tests are run), by running this command:
 
-    browserstack-runner init
+`browserstack-runner init [preset] [path]`
+
+`preset`: Path of a custom preset file. Default: `presets/default.json`
+
+`path`: Path to test file. Default: `path/to/test/runner`
 
 ### Parameters for `browserstack.json`
 
@@ -191,17 +208,20 @@ A sample configuration file:
       "browser_version": "10.0",
       "device": null,
       "os": "Windows",
-      "os_version": "8"
+      "os_version": "8",
+      "cli_key": 1
     },
     {
       "os": "android",
       "os_version": "4.0",
-      "device": "Samsung Galaxy Nexus"
+      "device": "Samsung Galaxy Nexus",
+      "cli_key": 2
     },
     {
       "os": "ios",
       "os_version": "7.0",
-      "device": "iPhone 5S"
+      "device": "iPhone 5S",
+      "cli_key": 3
     }
   ]
 }
@@ -209,7 +229,7 @@ A sample configuration file:
 
 #### `browsers` parameter
 
-`browsers` parameter is a list of objects, where each object contains the details of the browsers on which you want to run your tests. This object differs for browsers on desktop platforms and browsers on mobile platforms. Browsers on desktop platform should contain `browser`, `browser_version`, `os	`, `os_version` parameters set as required.
+`browsers` parameter is a list of objects, where each object contains the details of the browsers on which you want to run your tests. This object differs for browsers on desktop platforms and browsers on mobile platforms. Browsers on desktop platform should contain `browser`, `browser_version`, `os`, `os_version` parameters set as required and the `cli_key` parameter is optional and can be used in the command line when tests need to be run on a set of browsers from the `browserstack.json` file.
 
 Example:
 ```json
@@ -217,7 +237,8 @@ Example:
       "browser": "ie",
       "browser_version": "10.0",
       "os": "Windows",
-      "os_version": "8"
+      "os_version": "8",
+      "cli_key": 1
 }
 ```
 
@@ -228,12 +249,14 @@ Example:
 [{
 	"os": "ios",
 	"os_version": "8.3",
-	"device": "iPhone 6 Plus"
+	"device": "iPhone 6 Plus",
+	"cli_key": 1
 },
 {
 	"os": "android",
 	"os_version": "4.0",
-	"device": "Google Nexus"
+	"device": "Google Nexus",
+	"cli_key": 2
 }
 ]
 ```
@@ -266,7 +289,8 @@ Example:
         "browser_version": "10.0",
         "device": null,
         "os": "Windows",
-        "os_version": "8"
+        "os_version": "8",
+        "cli_key": 1
       }
   ]
 }

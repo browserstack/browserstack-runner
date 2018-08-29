@@ -1,20 +1,52 @@
 #! /usr/bin/env node
 
-var todo = process.argv[2],
-  path = require('path'),
-  config;
+var yargs = require('yargs')
+  .command('init [preset] [path]', 'initialise browserstack.json with preset and test runner path', function(yargs) {
+    return yargs.option('preset', {
+      type: 'string',
+      default: 'default',
+      description: 'name of preset json file(without extension)(present in node_modules/browserstack-runner/presets to be used while initiating'
+    })
+    .option('path', {
+      type: 'string',
+      default: '/path/to/test/runner',
+      description: 'path to test runner to be inserted in browserstack.json'
+    });
+  })
+  .option('browsers', {
+    alias: 'b',
+    type: 'array',
+    description: 'list of space separatedbrowsers keys as described in json file'
+  })
+  .option('path', {
+    type: 'string',
+    description: 'path to test file'
+  })
+  .option('version', {
+    alias: 'V',
+    description: 'browserstack-runner version'
+  })
+  .option('pid', {
+    type: 'string',
+    description: 'path to pid file'
+  })
+  .option('verbose', {
+    alias: 'v',
+    description: 'verbose logging'
+  }).argv;
 
-if (process.argv.indexOf('--verbose') !== -1) {
+if (yargs['verbose']) {
   global.logLevel = process.env.LOG_LEVEL || 'debug';
 } else {
   global.logLevel = 'info';
 }
+var path = require('path'),
+  config;
 
-if (todo === 'init') {
+if(yargs['_'].indexOf('init') !== -1) {
+  module.exports.preset = yargs['preset'];
+  module.exports.path = yargs['path'];
   require('./init.js');
-  return;
-} else if (todo === '--version') {
-  require('./version.js');
   return;
 }
 
@@ -37,16 +69,33 @@ try {
 }
 
 // extract a path to file to store tunnel pid
-var pid = process.argv.find(function (param) { return param.indexOf('--pid') !== -1; });
-
-if (pid) {
-  var extracted_path = /--pid=([\w\/\.-]+)/g.exec(pid);
-  if (extracted_path) {
-    config.tunnel_pid_file = extracted_path[1];
+if(yargs.hasOwnProperty('pid')) {
+  if(yargs['pid'].trim().length > 0) {
+    config.tunnel_pid_file = yargs['pid'].trim();
   } else {
-    console.error('Error while parsing flag --pid. Usage: --pid=/path/to/file');
+    throw new Error('Empty pid file path');
   }
 }
+
+// filter browsers according to from command line arguments
+if(yargs['browsers']) {
+  if(yargs['browsers'].length > 0) {
+    config.browsers = config.browsers.filter( function(browser) {
+      return yargs['browsers'].indexOf(browser['cli_key']) !== -1;
+    });
+  } else {
+    throw new Error('No browser keys specified. Usage --browsers <key1> <key2> ...');
+  }
+  if(config.browsers.length === 0) {
+    throw new Error('Invalid browser keys');
+  }
+  if(config.browsers.length < yargs['browsers'].length) {
+    console.warn('Some browser keys not present in config file.');
+  }
+}
+
+// test file path from cli arguments
+config.test_path = yargs['path'] || config.test_path;
 
 var runner = require('./cli.js');
 runner.run(config, function(err) {
