@@ -7,7 +7,9 @@ var assert = require('assert'),
   path = require('path'),
   http = require('http'),
   browserstackRunner = require('../../bin/cli.js'),
-  Tunnel = require('../../lib/local.js').Tunnel;
+  Tunnel = require('../../lib/local.js').Tunnel,
+  exec = require('child_process').exec,
+  execSync = require('child_process').execSync;
 
 var getBaseConfig = function() {
   return { 
@@ -223,6 +225,42 @@ describe('Pass/Fail reporting', function() {
         });
         done();
       });
+    });
+  });
+});
+
+describe('Command Line Interface Tests', function() {
+  this.timeout(0);
+  it('Should run with valid CLI arguments', function(done) {
+    execSync('bin/runner.js init');
+    exec('bin/runner.js --browsers 1 --path tests/behaviour/resources/qunit_sample.html', null, function(error, stdout, stderr) {
+      assert.equal(error, null);
+      done();
+    });
+  });
+  it('Should raise errors if all invalid browser keys.', function(done) {
+    exec('bin/runner.js --browsers 10 --path tests/behaviour/resources/qunit_sample.html', null, function(error, stdout, stderr) {
+      assert.notEqual(error.message.match('Invalid'), null);
+      done();
+    });
+  });
+  it('Should raise error if invalid test path', function(done) {
+    exec('bin/runner.js --browsers 1 --path invalid/path', function(error, stdout, stderr) {
+    assert.notEqual(error, null);
+    assert.notEqual(error.message.match('Invalid'), null);
+      done();
+    });
+  });
+  it('Should run tests on browsers present if some keys not present', function(done) {
+    exec('bin/runner.js --browsers 1 10 --path tests/behaviour/resources/qunit_sample.html', null, function(error, stdout, stderr) {
+      assert.equal(error, null);
+      done();
+    });
+  });
+  it('Should raise error if empty pid path with pid parameter', function(done) {
+    exec('bin/runner.js --browsers 1 --path tests/behaviour/resources/qunit_sample.html --pid', null, function(error, stdout, stderr) {
+      assert.notEqual(error, null);
+      done();
     });
   });
 });
