@@ -15,5 +15,11 @@
 ## browserstack.json
 <!-- Provide your browserstack.json, remember to exclude your browserstack username and access key.-->
 
+## Platform details
+ 
+  1. browserstack-runner version:
+  2. node version:
+  3. os type and version:
+
 ## Details
 <!--- Provide a detailed description of the issue that you are facing. -->
