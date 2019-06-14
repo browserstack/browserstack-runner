@@ -16,7 +16,7 @@ var yargs = require('yargs')
   .option('browsers', {
     alias: 'b',
     type: 'array',
-    description: 'list of space separated browsers keys as described in json file'
+    description: 'list of space separatedbrowsers keys as described in json file'
   })
   .option('path', {
     type: 'string',
