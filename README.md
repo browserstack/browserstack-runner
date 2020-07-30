@@ -320,6 +320,7 @@ To avoid duplication of system or user specific information across several confi
 * `BROWSERSTACK_KEY`: BrowserStack key.
 * `TUNNEL_ID`: Identifier for the current instance of the tunnel process. In `TRAVIS` setup `TRAVIS_JOB_ID` will be the default identifier.
 * `BROWSERSTACK_JSON`: Path to the browserstack.json file. If null, `browserstack.json` in the root directory will be used.
+* `BROWSERSTACK_LOCAL_BINARY_PATH`: Path to the browserstack local binary present on the system. If null, `BrowserStackLocal` in the `lib/` directory will be used.
 
 
 ### Secure Information
@@ -348,10 +349,10 @@ To run a larger suite of tests ensuring compatibility with older versions of QUn
 Tests are also run for every pull request, courtesy [Travis CI](https://travis-ci.org/).
 
 ### Timeout issue with Travis CI
- 
-You might face [build timeout issue on Travis](https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received) if runner takes more than 10 minutes to run tests. 
 
-There are 2 possible ways to solve this problem: 
+You might face [build timeout issue on Travis](https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received) if runner takes more than 10 minutes to run tests.
+
+There are 2 possible ways to solve this problem:
   1. Run a script which does `console.log` every 1-2 minutes. This will output to console and hence avoid Travis build timeout
   2. Use `travis_wait` function provided by Travis-CI. You can prefix `browserstack-runner` command by `travis-wait` in your `travis.yml` file
 

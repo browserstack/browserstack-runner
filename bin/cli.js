@@ -421,11 +421,11 @@ function runTests(config, callback) {
   }
 }
 
-exports.run = function(user_config, callback) {
+exports.run = function(userConfig, callback) {
   callback = callback || function() {};
 
   try {
-    config = new (require('../lib/config').config)(user_config);
+    config = new (require('../lib/config').config)(userConfig);
 
     client = BrowserStack.createClient({
       username: config.username,
