@@ -1,8 +1,11 @@
 # BrowserStack Runner
 
-[![Build Status](https://travis-ci.org/browserstack/browserstack-runner.svg?branch=master)](https://travis-ci.org/browserstack/browserstack-runner)
-
 A command line interface to run browser tests over BrowserStack.
+
+## Hotfixes from [@qunitjs/browserstack-runner](https://github.com/qunitjs/browserstack-runner):
+
+1. Fix Mocha 8+ compat. [#248](https://github.com/browserstack/browserstack-runner/issues/248)
+2. Fix QUnit.todo breakage. [#247](https://github.com/browserstack/browserstack-runner/issues/247)
 
 ## Usage
 

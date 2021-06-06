@@ -3,9 +3,6 @@ language: node_js
 node_js:
   - 'stable'
 
-before_install:
-  - npm install -g grunt-cli jshint gulp
-
 script:
   - npm run-script test-ci
 
